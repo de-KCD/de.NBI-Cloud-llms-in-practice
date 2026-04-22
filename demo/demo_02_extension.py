@@ -2,7 +2,7 @@
 """
 Demo 02 Extensions: Interdisciplinary Schemas
 
-This file adds 6 additional schemas for NON-bioinformatics fields:
+This file adds 6 additional schemas for adjacent fields or use cases:
 - Chemistry (ChemicalCompound)
 - Clinical/Medical (PatientSample)
 - Ecology (SpeciesObservation)
