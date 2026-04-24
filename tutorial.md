@@ -51,7 +51,6 @@ The demos are organized by chapter:
 - demo_03: Simple tool-calling agent
 - demo_04: Real bioinformatics APIs
 - demo_05: Understanding LLM limitations
-- demo_06: Hybrid autonomous agent
 - demo_07: Full autonomous research agent
 
 **Quick Navigation**
@@ -67,10 +66,10 @@ The demos are organized by chapter:
 
 | Demo | What It Does | Time | Complexity |
 |------|--------------|------|------------|
-| [demo_03](#demo-03-simple-agent) | Simple tool-calling agent | 15 min | Beginner |
-| [demo_04](#demo-04-real-api-agent) | Real bioinformatics APIs | 30 min | Intermediate |
-| [demo_05](#demo-05-llm-limitations) | Understanding LLM limitations | 25 min | Intermediate |
-| [demo_06](#demo-06-hybrid-autonomous) | Hybrid autonomous agent | 30 min | Advanced |
+|[demo_03](#demo-03-simple-agent) | Simple tool-calling agent | 15 min | Beginner |
+|[demo_04](#demo-04-real-api-agent) | Real bioinformatics APIs | 30 min | Intermediate |
+|[demo_05](#demo-05-llm-limitations) | Understanding LLM limitations | 25 min | Intermediate |
+|[demo_07](#demo-07-autonomous-research-agent) | Full autonomous research | 35 min | Advanced |
 
 ## Setup
 
@@ -820,7 +819,7 @@ You now know:
 
 **Next:**
 - demo_05 -> Understanding LLM limitations (why hybrid matters)
-demo_06 -> Fully autonomous investigation
+- demo_07 -> Full autonomous research agent
 
 ## Demo 05: Understanding LLM Limitations
 
@@ -840,7 +839,7 @@ demo_06 -> Fully autonomous investigation
 - Why LLMs are pattern-matchers, NOT calculators
 - The danger of trusting LLM "confidence scores"
 - When LLM pattern-matching works (and when it fails)
-- Why hybrid architecture (demo_06) is the production solution
+- Why hybrid architecture (demo_07) is the production solution
 
 ### Run the Demo
 
@@ -1124,262 +1123,122 @@ WARNING:️  **Verify everything with hardcoded tools for real science!**
 4. For real science: **demo_04 (hardcoded) or verify independently**
 5. Be honest about what LLMs can and cannot do
 
+**Next:**
+- demo_07 -> Full autonomous research agent
 
-## Demo 06: Hybrid Autonomous Investigation
+## Demo 07: Full Autonomous Research Agent
 
-**File:** `demo/demo_06_hybrid_autonomous_standalone.py`
+**File:** `demo/demo_07_autonomous_research_agent.py`
 
-### The Grand Finale: True Agentic Bioinformatics
+The final evolution: an agent that combines **real APIs**, **deterministic algorithms**, and **LLM reasoning** into a fully autonomous research system.
 
-This is the **culmination** of everything you've learned:
+### What Makes This Different
+
+| Demo | Tools | Autonomy | Production-Ready |
+|------|-------|----------|------------------|
+| demo_03 | 4 local tools | Limited | No |
+| demo_04 | APIs only | Fixed workflow | Maybe |
+| demo_05 | LLM-generated | N/A | Never |
+| **demo_07** | **APIs + Algorithms + Knowledge** | **Full** | **Yes** |
+
+### Tool Catalog
+
+**Algorithms (5)** - 100% deterministic Python:
+- `count_bases`, `find_orfs`, `search_motif`, `find_cpg_islands`, `reverse_complement`
+
+**APIs (6)** - Real HTTP calls:
+- `search_uniprot`, `get_protein_function`, `search_pubmed`, `fetch_gene_sequence`, `get_protein_sequence`
+
+**Knowledge (2)** - LLM reasoning:
+- `interpret_motif`, `evaluate_coding_potential`
+
+### Architecture
 
 ```
-demo_01 -> Basic LLM calls (what can LLMs do?)
-demo_02 -> Structured outputs (reliable parsing)
-demo_03 -> Simple agent (tool orchestration)
-demo_04 -> Real API agent (external databases)
-demo_05 -> LLM pattern-matching (EDUCATIONAL ONLY!)
-demo_06 -> HYBRID (autonomous planning + real tools) <- YOU ARE HERE
++-----------+     +----------------+     +-----------+
+|   LLM     | --> |   Decision:    | --> |  Tool     |
+|  (brain)  |     | Call tool or   |     | Execution |
++-----------+     | Conclude       |     +-----------+
+      ^            +----------------+          |
+      |                    |                   |
+      |                    v                   |
+      |             +----------------+         |
+      +-------------| Results feed   | <-------+
+                    | back to LLM    |
+                    +----------------+
 ```
-
-**Key insight:** demo_06 combines the **best of both worlds**:
-- **Autonomy** from agents (LLM plans investigation)
-- **Accuracy** from pipelines (real tools do computation)
-
-### The Evolution of Autonomy
-
-| Approach | Planning | Computation | Interpretation | Production Ready? |
-|------|--------------|------|---|---|
-| Pure LLM (demo_05) | Human | LLM (pattern-match) | LLM | (not applicable) Educational only |
-| **Hybrid (demo_06)** | **LLM** | **Python (100%)** | **LLM** | **Yes!** |
-
-**Why hybrid wins:**
-- LLM for **what it does well**: planning, reasoning, interpretation
-- Python for **what it does well**: computation, accuracy, reproducibility
-- **Autonomous + Accurate** = production-ready bioinformatics agent
-
-### What You'll Learn
-
-- **Hybrid agent architecture** - LLM reasoning + real tools
-- **Autonomous planning** - agent decides what to analyze
-- **Real tool integration** - Built-in SequenceCharacterizer (100% accurate)
-- **Biological interpretation** - LLM generates hypotheses
-- **Scientific reasoning** - alternative explanations, limitations
-- **Production pattern** - how to build real bioinformatics agents
 
 ### Run the Demo
 
 ```bash
-python demo/demo_06_hybrid_autonomous_standalone.py
+python demo/demo_07_autonomous_research_agent.py
 ```
 
-### The Hybrid Architecture
+### Example Tasks
 
+**Task 1: Fetch and analyze TERT promoter**
+```
+Agent decides:
+1. fetch_gene_sequence(TERT, promoter) -> gets 2500bp
+2. count_bases + find_orfs + search_motif(TATA box)
+3. search_pubmed(TERT promoter cancer) -> gets citations
+4. interpret_motif(TATA box position) -> biological significance
+5. Conclude: "TERT promoter contains core promoter elements, 
+    associated with cancer via telomerase reactivation"
 ```
 
-|  HUMAN ASKS: "What can you tell me about this sequence?"            |
-
-                              v
-
-|  LLM PLANS (Autonomous Decision-Making):                            |
-|  "Let me run full characterization first..."                        |
-|  "Interesting! GC% is 55%. Let me investigate ORFs..."              |
-|  "Found a TATA box! This might be regulatory..."                    |
-|  "I have enough to conclude"                                        |
-
-                              v
-
-|  REAL TOOLS EXECUTE (100% Accurate Computation):                    |
-|  -> SequenceCharacterizer.analyze()                                  |
-|     - GC%: 55.2% (real algorithm)                                   |
-|     - ORFs: 3 found (real algorithm)                                |
-|     - TATA box: position 0 (real pattern match)                     |
-|     - Restriction sites: 5 enzymes (real database lookup)           |
-
-                              v
-
-|  LLM INTERPRETS (Biological Reasoning):                             |
-|  "This looks like a promoter region because:"                       |
-|  "  - TATA box at position 0"                                       |
-|  "  - High GC% suggests CpG island"                                 |
-|  "  - Short ORF downstream could be regulatory peptide"             |
-|  "Confidence: Medium - needs experimental validation"               |
-
+**Task 2: BRCA1 protein function**
+```
+Agent decides:
+1. search_uniprot(BRCA1) -> P38398
+2. get_protein_function(P38398) -> DNA repair
+3. search_pubmed(BRCA1 breast cancer) -> 5 papers
+4. Conclude with citations
 ```
 
-### What Makes It Hybrid (Not Pure LLM)?
+### Key Features
 
-**Critical difference from demo_05:**
+1. **No hardcoded workflows** - LLM decides what to do
+2. **Real citations** - PubMed papers with PMIDs
+3. **Hypothesis tracking** - Agent maintains working hypothesis
+4. **Alternative explanations** - Scientific skepticism built-in
+5. **Error handling** - Graceful failures, partial results
 
-| Aspect | demo_05 (Pure LLM) | demo_06 (Hybrid) |
-|------|--------------|------|
-| **GC% calculation** | LLM pattern-matches | SequenceCharacterizer (real algorithm) |
-| **ORF finding** | LLM guesses | SequenceCharacterizer (real algorithm) |
-| **Restriction sites** | LLM hallucinates | SequenceCharacterizer (database lookup) |
-| **Confidence** | Hallucinated token | 1.0 for real computation |
-| **Production use** | (not applicable) DANGEROUS | Safe + Reliable |
+### When to Use
 
-**The agent NEVER does calculation itself!**
-
-```python
-# (not applicable) WRONG (demo_05 pattern):
-result = llm.call("Calculate GC% of ATGCATGC")
-# LLM pattern-matches, might be wrong
-
-# CORRECT (demo_06 pattern):
-plan = llm.call("What should I analyze?")  # LLM reasoning
-result = characterizer.analyze(seq)  # Real computation
-interpretation = llm.call("What does this mean?")  # LLM reasoning
-```
-
-### Agent Workflow
-
-**Example investigation:**
-
-```
-Task: "What can you tell me about this sequence?"
-Sequence: TATAAAGGCCACCATGGCTGACTACGTAGCTAG
-
-Iteration 1:
-  📋 LLM Plan: "Run full characterization first"
-  🔬 Real Tools: SequenceCharacterizer.analyze()
-     -> GC%: 51.52%, ORFs: 1, TATA box: YES
-  Agent: "Interesting findings! Let me investigate further"
-
-Iteration 2:
-  📋 LLM Plan: "The TATA box suggests promoter. Check features."
-  🔬 Real Tools: Extract from characterization report
-     -> TATA at position 0, CpG island detected
-  Agent: "This looks regulatory. Let me check ORFs"
-
-Iteration 3:
-  📋 LLM Plan: "Analyze the ORF - is it coding?"
-  🔬 Real Tools: ORF analysis from report
-     -> 1 ORF, 33 amino acids (short)
-  Agent: "Short ORF + TATA = likely regulatory peptide"
-
-Iteration 4:
-  📋 LLM Plan: "Have enough evidence. Generate conclusion."
-  📝 LLM Interpretation: "Promoter region with regulatory peptide"
-```
-
-### Report Structure
-
-The agent provides:
-
-- 📋 **Key Findings** - What it discovered (from real tools!)
-- DNA **Interpretation** - What it means biologically (LLM reasoning)
-- 📊 **Evidence** - Data supporting conclusions (real numbers)
-- 🤔 **Alternative Explanations** - Scientific skepticism
-- WARNING:️ **Limitations** - Intellectual honesty
-- ❓ **Follow-up Questions** - What to investigate next
-
-### Try It Yourself
-
-**Exercise 1: Promoter identification**
-
-```python
-agent = AutonomousSequenceAgent(max_iterations=4)
-
-# Promoter region
-seq = "TATAAAGGCCACCATGGCTGACTACGTAGCTAG"
-report = agent.investigate(seq, "What type of sequence is this?")
-
-print(report['summary']['biological_interpretation'])
-# Expected: "Promoter region" or "Regulatory sequence"
-```
-
-**Exercise 2: Coding vs non-coding**
-
-```python
-# Long coding sequence
-coding_seq = "ATG" + "GCTGACTAC" * 20 + "TAA"  # 183 bp
-
-report = agent.investigate(coding_seq, "Is this coding or non-coding?")
-
-print(f"Confidence: {report['summary']['confidence']}")
-print(f"Interpretation: {report['summary']['biological_interpretation']}")
-# Expected: "Coding sequence" with high confidence
-```
-
-**Exercise 3: Compare hybrid vs pure LLM**
-
-```python
-# Run same sequence on both demos
-seq = "ATGCATGCATGCATGCATGCATGCATGC"
-
-# demo_05 (pure LLM - educational)
-# -> LLM pattern-matches GC%, might be wrong
-
-# demo_06 (hybrid - production)
-# -> SequenceCharacterizer computes GC% (100% accurate)
-# -> LLM interprets what it means
-
-# Compare results - hybrid should be more reliable!
-```
+| Use Case | Good Fit? |
+|----------|-----------|
+| Open-ended research questions | Yes |
+| Literature + sequence analysis | Yes |
+| Exploratory hypothesis generation | Yes |
+| Batch processing 1000s of sequences | No (use scripted) |
+| Clinical diagnostics | No (verify everything) |
 
 ### Troubleshooting
 
-**Agent runs too few iterations:**
+**Agent loops too long:**
+- Reduce `max_iterations` (default: 10)
+- Make task more specific
 
-Increase `max_iterations`:
-```python
-agent = AutonomousSequenceAgent(max_iterations=6)  # Deeper investigation
-```
+**API calls fail:**
+- Check internet connection
+- Verify UniProt/NCBI availability
+- Look at `success: False` in results
 
-**LLM interpretation seems generic:**
+**LLM ignores knowledge tools:**
+- Tools are optional - LLM may not need them
+- Explicitly ask: "Interpret the biological significance"
 
-Provide more specific task:
-```python
-# Vague (bad)
-task = "Analyze this"
+**Output too verbose:**
+- Set `verbose=False` in investigate()
+- Review JSON report instead of printed output
 
-# Specific (good)
-task = "Is this a promoter, enhancer, or coding region? Explain your reasoning."
-```
-
-**Want to see agent's reasoning:**
-
-Enable `verbose=True`:
-```python
-report = agent.investigate(seq, task, verbose=True)
-# Shows planning, tool calls, and interpretation steps
-```
-
-**Confidence seems too high/low:**
-
-Remember: confidence is LLM-generated (like demo_05). The **data** is real, but the confidence estimate is the LLM's guess. Always verify critical findings!
-
-### When to Use Hybrid vs Other Approaches
-
-| Scenario | Use Demo 07 | Use Demo 05 | Use Demo 06 |
-|----------|-------------|-------------|-------------|
-| Batch analysis (1000s of seqs) | Yes | No | No |
-| Quick calculation | Yes | Caution | Caution |
-| Exploratory research | No | Caution | Yes |
-| Hypothesis generation | No | Caution | Yes |
-| Open-ended questions | No | Caution | Yes |
-| Production pipeline | Yes | No | Caution |
-| Research assistant | No | No | Yes |
-| Educational demo | Yes | Yes (limitations) | Yes (best practice) |
-
-Key insight: demo_06 is your AI research partner - autonomous, insightful, but backed by real data.
-
-You now know:
-- Hybrid architecture - LLM planning + real tools
-- Autonomous investigation - agent decides what to analyze
-- Real computation - SequenceCharacterizer (100% accurate)
-- Biological interpretation - LLM generates hypotheses
-- Scientific reasoning - alternative explanations, limitations
-- Production pattern - how to build real bioinformatics agents
-
-**Summary:**
-
-1. demo_01-02: LLM basics (calls, structured outputs)
-2. demo_03-05: Agent patterns (orchestration, APIs, pattern-matching)
-3. demo_06: HYBRID (autonomous + accurate = production-ready)
-
-Understanding LLMs means: know what they are bad at (use real tools), know what they are good at (use LLM creativity).
+You now know the complete progression:
+- demo_01-02: LLM fundamentals
+- demo_03: Simple agents
+- demo_04: External APIs
+- demo_05: What NOT to do
+- demo_07: Full autonomy (APIs + algorithms + reasoning)
 
 ## Learning Path
 
@@ -1395,13 +1254,13 @@ Start here:
 Try these:
 1. demo_04 -> Real APIs
 2. demo_05 -> LLM-generated tools
-3. demo_06 -> Hybrid autonomous agent
+3. demo_07 -> Full autonomous research agent
 4. Modify and extend!
 
 ### For Advanced Users
 
 Explore:
-1. demo_06 -> Full autonomy
+1. demo_07 -> Full autonomy
 2. Modify and extend!
 
 ## Troubleshooting
@@ -1435,7 +1294,7 @@ You now know:
 - Simple agent architecture (demo_03)
 - Real bioinformatics APIs (demo_04)
 - LLM pattern-matching limitations (demo_05)
-- Hybrid autonomous investigation (demo_06)
+- Full autonomous research with real APIs (demo_07)
 
 ### Where to Go Next
 
