@@ -1276,6 +1276,6 @@ if __name__ == "__main__":
     print("\nCompare to other demos:")
     print("  - demo_03: Simple agent with hardcoded local tools")
     print("  - demo_04: Agent with external API tools only")
-    print("  - demo_06_truly: Agent with local algorithms only")
+    print("  - demo_05: Agent with LLM knowledge only")
     print("  - demo_07: FULL agent - APIs + algorithms + knowledge")
     print("="*60)
