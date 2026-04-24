@@ -9,19 +9,7 @@
 A self-contained workshop in which participants can try out simple agentic workflow using LLMs.
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
----
 
----
-title: "de.KCD / de.NBI Cloud LLMs in Practice"
-subtitle: "From Prompts to Simple Agents in Bioinformatics"
-version: "0.1"
-date: "2026-04-20"
-level: "Beginner to Advanced"
-prerequisites:
-  - "Python 3.9+"
-  - "Basic command line and programming knowledge"
-  - "LLM API access (provided)"
-  - "Your own use cases!"
 ---
 
 ## Overview
