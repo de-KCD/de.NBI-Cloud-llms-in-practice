@@ -13,10 +13,8 @@ prerequisites:
 
 # Bioinformatics LLM Agent Demos - Hands-On Tutorial
 
----
-
 ## Overview
-**Time estimation:** 3-4H
+**Time estimation:** 3H+
 **Last update:** 2026-04-20
 
 **Questions:**
@@ -33,68 +31,45 @@ prerequisites:
 - Design and validate custom schemas for your own research data.
 - Compare different agent architectures and choose appropriate patterns.
 
----
-
 ## Disclaimer:
 
-In keeping with this tutorial's subject matter, LLMs were used to format and structure this document. The human author retains full responbility of the underlying ideas, code, and experimental design. The AI's role was limited to polishing messy drafts into a clear, readable narrative for participants.
+Consistent with this tutorial's subject matter, LLMs were used to assist in preparing these materials. The human author retains responsibility for the underlying ideas, code, and experimental design. This work represents an experiment to evaluate how effectively open models can contribute to these tasks.
 
-## Welcome! 👋
+## Welcome
 
-This tutorial walks you through **actual working code** in the `demo/` directory. Unlike theoretical tutorials, you'll run real agents that analyze DNA sequences, search scientific databases, and generate insights autonomously.
+This tutorial walks you through actual working code in the `demo/` directory. We begin with simple LLM calls, then gradually introduce more agentic behaviors.
 
-### What You'll Find Here
+### Tutorial Structure
 
-The demos are organized by **chapter** and **theme**:
+The demos are organized by chapter:
 
-```
-Chapter 1: Basics (LLM Fundamentals)
-┌─────────────────────────────────────────┐
-│  demo_01 → demo_02                      │
-│  (basic calls) → (structured outputs)   │
-└─────────────────────────────────────────┘
+**Chapter 1: Basics (LLM Fundamentals)**
+- demo_01: Basic LLM API calls
+- demo_02: Structured outputs
 
-Chapter 2: Agents (Core Patterns)
-┌─────────────────────────────────────────────────────────────────┐
-│  demo_03 → demo_04 → demo_05 → demo_06                          │
-│  (simple    (real     (LLM      (hybrid                         │
-│   agent)   APIs)     generated) autonomous)                     │
-└─────────────────────────────────────────────────────────────────┘
+**Chapter 2: Agents (Core Patterns)**  
+- demo_03: Simple tool-calling agent
+- demo_04: Real bioinformatics APIs
+- demo_05: Understanding LLM limitations
+- demo_06: Hybrid autonomous agent
 
-Chapter 3: Tool Development (Appendix - Optional Deep Dives)
-┌──────────────────────────────────────────────────────────────────────┐
-│  demo_07 (includes detective mode)                                   │
-│  (sequence characterization + hypothesis-driven investigation)       │
-└──────────────────────────────────────────────────────────────────────┘
-```
-
-### Quick Navigation
+**Quick Navigation**
 
 **Chapter 1: Basics**
 
 | Demo | What It Does | Time | Complexity |
 |------|--------------|------|------------|
-| [demo_01](#demo-01-basic-llm-calls) | Basic LLM API calls | 10 min | ⭐ |
-| [demo_02](#demo-02-structured-outputs) | Structured JSON outputs | 20 min | ⭐⭐ |
+| [demo_01](#demo-01-basic-llm-calls) | Basic LLM API calls | 10 min | Beginner |
+| [demo_02](#demo-02-structured-outputs) | Structured JSON outputs | 20 min | Beginner |
 
 **Chapter 2: Agents**
 
 | Demo | What It Does | Time | Complexity |
 |------|--------------|------|------------|
-| [demo_03](#demo-03-simple-agent) | Simple tool-calling agent | 15 min | ⭐⭐ |
-| [demo_04](#demo-04-real-api-agent) | Real bioinformatics APIs | 30 min | ⭐⭐⭐ |
-| [demo_05](#demo-05-llm-limitations) | Understanding LLM limitations | 25 min | ⭐⭐⭐ |
-| [demo_06](#demo-06-hybrid-autonomous) | Hybrid autonomous agent | 30 min | ⭐⭐⭐⭐ |
-
-**Chapter 3: Tool Development (Optional)**
-
-| Demo | What It Does | Time | Complexity |
-|------|--------------|------|------------|
-| [demo_07](#demo-07-sequence-characterization) | Sequence analysis pipeline | 20 min | ⭐⭐⭐ |
-
-> **Includes:** Detective mode (`demo_07b_detective.py`) - hypothesis-driven investigation with NCBI BLAST
-
----
+| [demo_03](#demo-03-simple-agent) | Simple tool-calling agent | 15 min | Beginner |
+| [demo_04](#demo-04-real-api-agent) | Real bioinformatics APIs | 30 min | Intermediate |
+| [demo_05](#demo-05-llm-limitations) | Understanding LLM limitations | 25 min | Intermediate |
+| [demo_06](#demo-06-hybrid-autonomous) | Hybrid autonomous agent | 30 min | Advanced |
 
 ## Setup
 
@@ -102,10 +77,10 @@ Chapter 3: Tool Development (Appendix - Optional Deep Dives)
 
 ```bash
 # Clone the tutorial files
-git clone
+git clone https://github.com/de-KCD/de.NBI-Cloud-llms-in-practice
 
 # Navigate to the project directory
-cd /path/to/your/project
+cd de.NBI-Cloud-llms-in-practice
 
 # Check Python version (need 3.9+)
 python --version
@@ -139,19 +114,13 @@ export LLM_MODEL="qwen3.5-fp8"
 ```
 
 > **Tip:** Add these to your `~/.bashrc` or `~/.zshrc` to persist across sessions.
->
 > **Security:** Never commit API keys to version control. Use `.env` files or secret managers in production.
-
----
 
 ## Demo 01: Basic LLM Calls
 
 **File:** `demo/demo_01_basic.py`
 
-**What You'll Learn:**
-- How to make API calls to an LLM
-- Different types of tasks LLMs can perform
-- Limitations of unstructured outputs
+This demo covers making API calls to an LLM, exploring different types of tasks LLMs can perform, and understanding the limitations of unstructured outputs.
 
 ### Run the Demo
 
@@ -172,16 +141,16 @@ The demo makes four types of calls:
 
 **LLMs are text generators, not calculators:**
 
-LLMs predict the next token based on training patterns. They don't actually "compute" or "calculate" - they generate text that looks like calculations.
+LLMs predict the next token based on training patterns. They do not actually compute or calculate -- they generate text that looks like calculations.
 
 | Task Type | Example | Why It Works (or Doesn't) |
 |-----------|---------|---------------------------|
-| Explanation | "What is GC content?" | ✓ High - LLMs have seen many explanations |
-| Calculation | "Calculate GC%" | ⚠ Medium - Pattern-matching, not real math |
-| Transformation | "Reverse complement..." | ⚠ Medium - Common patterns work, long sequences fail |
-| Extraction | "Extract gene info..." | ⚠ Medium - Format varies, may miss fields |
+| Explanation | "What is GC content?" | High - LLMs have seen many explanations |
+| Calculation | "Calculate GC%" | Medium - Pattern-matching, not real math |
+| Transformation | "Reverse complement..." | Medium - Common patterns work, long sequences fail |
+| Extraction | "Extract gene info..." | Medium - Format varies, may miss fields |
 
-> **Key insight:** LLMs excel at tasks they've seen many times in training (explaining concepts, short sequence transformations). They struggle with novel calculations or long sequences where they can't rely on patterns.
+Key insight: LLMs excel at tasks they have seen many times in training (explaining concepts, short sequence transformations). They struggle with novel calculations or long sequences where they cannot rely on patterns.
 
 ### Try It Yourself
 
@@ -198,21 +167,13 @@ result = call_llm(f"Extract the sample ID and GC% from: {text}")
 print(f"Extracted: {result}")
 ```
 
-> **⚠ Notice:** The LLM might make mistakes on calculations or transformations!
-> This is exactly why **demo_02** introduces structured outputs with validation.
-
----
+Notice: The LLM might make mistakes on calculations or transformations. This is exactly why **demo_02** introduces structured outputs with validation.
 
 ## Demo 02: Structured Outputs
 
 **File:** `demo/demo_02_structured.py`
 
-**What You'll Learn:**
-- How structured outputs solve demo_01's reliability problems
-- Using Pydantic models for validation
-- 9 bioinformatics schemas
-- Export to DataFrame, CSV, JSON
-- Instructor's JSON mode (grammar-constrained decoding)
+This demo shows how structured outputs solve demo_01's reliability problems, using Pydantic models for validation. It includes 9 bioinformatics schemas and demonstrates exporting results to DataFrame, CSV, and JSON. It also covers Instructor's JSON mode for grammar-constrained decoding.
 
 ### Run the Demo
 
@@ -231,20 +192,16 @@ The demo extracts structured data from text using 9 different schemas:
 5. **PathwayEnrichment** - GO/KEGG enrichment (GO ID pattern validation)
 6. **SequenceFeature** - ORFs, promoters, motifs (end > start validation)
 7. **SampleMetadata** - Clinical/experimental metadata
-8. **ClusterInfo** - scRNA-seq clusters (nested model with marker genes!)
+8. **ClusterInfo** - scRNA-seq clusters (nested model with marker genes)
 9. **GenomicRegion** - BED-like coordinates (0-based, end > start)
 
 **Demo Flow:**
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  1. Show schema guide (which schema to use when)        │
-│  2. Test each schema with realistic examples            │
-│  3. Collect results (DE, variants)                      │
-│  4. Export to DataFrame, CSV, JSON                      │
-│  5. Point to exercises for hands-on practice            │
-└─────────────────────────────────────────────────────────┘
-```
+1. Show schema guide (which schema to use when)
+2. Test each schema with realistic examples
+3. Collect results (DE, variants)
+4. Export to DataFrame, CSV, JSON
+5. Point to exercises for hands-on practice
 
 **Export Demo:**
 
@@ -257,14 +214,16 @@ At the end, the demo creates actual files:
 
 **Why structured outputs?**
 
-❌ Without structure (demo_01 problem):
+Without structure (demo_01 problem):
+
 ```
 "The BRCA1 gene has 24 exons on chromosome 17"
-→ Format varies every time, hard to parse
-→ LLM might make mistakes, no validation
+Format varies every time, hard to parse
+LLM might make mistakes, no validation
 ```
 
-✅ With structure (demo_02 solution):
+With structure (demo_02 solution):
+
 ```python
 GeneInfo(
     gene_name="BRCA1",      # Validated: uppercase, 1-20 chars
@@ -272,33 +231,26 @@ GeneInfo(
     chromosome="17",        # Optional
     uniprot_id="P38398"     # Validated: regex pattern
 )
-→ Consistent, validated, ready to use!
 ```
+
+Result: Consistent, validated, ready to use.
 
 **How instructor works:**
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  1. You define Pydantic model (schema)                  │
-│         ↓                                               │
-│  2. instructor converts to JSON Schema                  │
-│         ↓                                               │
-│  3. LLM generates JSON matching schema                  │
-│         ↓                                               │
-│  4. instructor parses → validates → retries if needed   │
-│         ↓                                               │
-│  5. You get validated Pydantic object                   │
-└─────────────────────────────────────────────────────────┘
-```
+1. You define a Pydantic model (schema)
+2. Instructor converts to JSON Schema
+3. LLM generates JSON matching schema
+4. Instructor parses, validates, and retries if needed
+5. You receive a validated Pydantic object
 
 **Why JSON MODE matters:**
 
-| Without JSON Mode | With JSON Mode |
-|-------------------|----------------|
-| LLM might return markdown | Only valid JSON |
-| Might include explanations | Pure data only |
-| Can be malformed | Grammar-constrained |
-| You must parse manually | Auto-parsed |
+| Feature | Without JSON Mode | With JSON Mode |
+|------|--------------|------|
+| Output format | LLM might return markdown | Only valid JSON |
+| Explanations | Might include explanations | Pure data only |
+| Structure | Can be malformed | Grammar-constrained |
+| Parsing | You must parse manually | Auto-parsed |
 
 ### Try It Yourself
 
@@ -327,17 +279,17 @@ Run `python demo/demo_02_structured.py` to see the full schema selection guide s
 
 ### Hands-On Exercises
 
-**Pick exercises for YOUR field!**
+Pick exercises for your field:
 
-> **Bioinformatics:** Exercises 1-4
-> **Chemistry:** Exercise 5
-> **Clinical:** Exercise 6
-> **Ecology:** Exercise 7
-> **Neuroscience:** Exercise 8
-> **Proteomics:** Exercise 9
-> **Structural Biology:** Exercise 10
+- **Bioinformatics:** Exercises 1-4
+- **Chemistry:** Exercise 5
+- **Clinical:** Exercise 6
+- **Ecology:** Exercise 7
+- **Neuroscience:** Exercise 8
+- **Proteomics:** Exercise 9
+- **Structural Biology:** Exercise 10
 
-**Exercise 1: Simple Schema (5 min) - ALL FIELDS**
+**Exercise 1: Simple Schema (5 min)**
 
 Create a minimal schema and extraction function:
 
@@ -393,7 +345,7 @@ text = "Sample ABC123 has 50% GC"  # Should fail validation
 try:
     result = extract_my_result(text)
 except Exception as e:
-    print(f"✓ Validation caught error: {e}")
+    print(f"Validation caught error: {e}")
 ```
 
 **Exercise 3: Nested Models (15 min)**
@@ -415,27 +367,27 @@ class SequencingRun(BaseModel):
     mean_quality: float
 ```
 
-**Exercise 4: Your Research (20 min) - ALL FIELDS**
+**Exercise 4: Your Research (20 min)**
 
-Think about YOUR work. What data do you extract from papers or lab notebooks?
+Think about your work. What data do you extract from papers or lab notebooks?
 
-Examples:
-- **Bioinformatics**: Primer design (Tm, GC%, length), antibody validation, cell line info
-- **Chemistry**: Reaction conditions, compound properties, spectroscopy data
-- **Clinical**: Patient demographics, treatment regimens, outcomes
-- **Ecology**: Species counts, environmental parameters, GPS coordinates
-- **Neuroscience**: Imaging parameters, task conditions, subject info
-- **Proteomics**: MS run settings, sample prep, instrument config
-- **Structural Biology**: PDB metadata, resolution, refinement stats
+Examples by field:
+- **Bioinformatics:** Primer design (Tm, GC%, length), antibody validation, cell line info
+- **Chemistry:** Reaction conditions, compound properties, spectroscopy data
+- **Clinical:** Patient demographics, treatment regimens, outcomes
+- **Ecology:** Species counts, environmental parameters, GPS coordinates
+- **Neuroscience:** Imaging parameters, task conditions, subject info
+- **Proteomics:** MS run settings, sample prep, instrument config
+- **Structural Biology:** PDB metadata, resolution, refinement stats
 
-Create a schema for your use case and test it with real text!
+Create a schema for your use case and test it with real text.
 
 **Exercises 5-10: Field-Specific Examples**
 
 See `demo/demo_02_extensions.py` for 6 additional schemas:
 
 | Exercise | Field | Schema | Example Task |
-|----------|-------|--------|--------------|
+|------|--------------|------|---|
 | **5** | Chemistry | `ChemicalCompound` | Extract MW, logP, CAS from paper |
 | **6** | Clinical | `PatientSample` | Structure patient metadata |
 | **7** | Ecology | `SpeciesObservation` | Parse field survey notes |
@@ -448,24 +400,13 @@ Run the examples:
 python demo/demo_02_extensions.py
 ```
 
-Then adapt the schema for YOUR specific needs!
+Then adapt the schema for your specific needs.
 
-**What You've Learned:**
-
-✅ Why structured outputs matter (demo_01's problem → demo_02's solution)
-✅ How instructor works (Pydantic → JSON Schema → validated object)
-✅ 9 bioinformatics schemas + 6 interdisciplinary schemas
-✅ Validation types: Field constraints, patterns, custom validators, nested models
-✅ Export to DataFrame, CSV, JSON
-✅ How to create your own schemas for YOUR field
-
-**Next:** demo_03 shows how to build an **agent** that uses tools autonomously!
-
----
+**Next:** demo_03 shows how to build an agent that uses tools autonomously.
 
 ## Demo 03: Simple Agent
 
-**File:** `demo/demo_03_agent.py`
+**File:** `demo/demo_03_simple_agent.py`
 
 **What You'll Learn:**
 - Agent architecture (system prompt + tool loop)
@@ -475,7 +416,7 @@ Then adapt the schema for YOUR specific needs!
 ### Run the Demo
 
 ```bash
-python demo/demo_03_agent.py
+python demo/demo_03_simple_agent.py
 ```
 
 ### What Happens
@@ -499,27 +440,22 @@ Iteration 2:
   Result: {"result": "GCATGCATGCAT", ...}
 
 Iteration 3:
-  ✓ Task complete!
+  Task complete!
   Final Answer: "The GC content is 50.0% and the reverse complement is GCATGCATGCAT"
 ```
 
 ### Key Concepts
 
 **The Agent Loop:**
-```
-┌─────────────────────────────────────────────┐
-│  FOR each iteration:                        │
-│    1. Ask LLM what to do                    │
-│    2. If done=True: return answer           │
-│    3. Execute tool calls                    │
-│    4. Add results to conversation           │
-│    5. Repeat                                │
-└─────────────────────────────────────────────┘
-```
+1. Ask LLM what to do
+2. If done=True: return answer  
+3. Execute tool calls
+4. Add results to conversation
+5. Repeat
 
 ### Try It Yourself
 
-**The demo now comes with 4 tools** including `find_motif` for finding DNA motifs!
+The demo includes 4 tools including `find_motif` for finding DNA motifs.
 
 Try modifying the test tasks to explore different motifs:
 
@@ -541,7 +477,7 @@ task = "Find GCGC in ATATATAT"
 
 Want to extend the agent? Add a tool that calculates melting temperature!
 
-**Step 1: Add the function** (after `find_motif` function, around line 128):
+Step 1: Add the function (after `find_motif` function, around line 128):
 
 ```python
 def calculate_tm(sequence: str) -> dict:
@@ -563,7 +499,7 @@ def calculate_tm(sequence: str) -> dict:
         return {"success": False, "error": str(e)}
 ```
 
-**Step 2: Register the tool** (in TOOLS dictionary, around line 182):
+Step 2: Register the tool (in TOOLS dictionary, around line 182):
 
 ```python
 TOOLS = {
@@ -571,17 +507,17 @@ TOOLS = {
     "count_bases": count_bases,
     "explain_concept": explain_concept,
     "find_motif": find_motif,
-    "calculate_tm": calculate_tm,  # ← Add this!
+    "calculate_tm": calculate_tm,  # <- Add this!
 }
 ```
 
-**Step 3: Update system prompt** (in system prompt, around line 234):
+Step 3: Update system prompt (in system prompt, around line 234):
 
 ```python
 - calculate_tm(sequence: str) - Calculate melting temperature
 ```
 
-**Step 4: Test it:**
+Step 4: Test it:
 
 ```python
 print("--- Test 4: Melting Temperature ---")
@@ -591,20 +527,12 @@ result4 = agent.run(task4)
 print(f"Final Answer: {result4}")
 ```
 
-**Why this matters:**
+This sequential combination (search then fetch) shows how agents chain tools to accomplish multi-step tasks.
 
-Finding motifs and calculating Tm are essential for:
-- **PCR primer design** - Need right Tm for annealing
-- **Gene prediction** - Start/stop codons mark gene boundaries
-- **Regulatory analysis** - Promoters contain specific motifs
-- **Mutation detection** - Changes in motifs can disrupt function
+The same pattern works for any domain: Examples:
 
-**Build Tools for YOUR Field:**
-
-The same pattern works for ANY domain! Examples:
-
-| Field | Tool Idea | What It Does |
-|-------|-----------|--------------|
+| Field | Tool Idea | Purpose |
+|------|--------------|------|
 | **Chemistry** | `calculate_molarity()` | Compute molarity from mass/volume |
 | **Chemistry** | `balance_equation()` | Balance chemical equations |
 | **Clinical** | `calculate_bmi()` | BMI from height/weight |
@@ -615,7 +543,7 @@ The same pattern works for ANY domain! Examples:
 | **Proteomics** | `peptide_mass()` | Calculate peptide mass |
 | **Structural Bio** | `rmsd()` | RMSD between structures |
 
-**Example: Chemistry agent**
+Example: Chemistry agent
 
 ```python
 def calculate_molarity(mass: float, mw: float, volume: float) -> dict:
@@ -666,19 +594,13 @@ Ensure all tools return `dict` with `"success": True/False`. The agent expects t
 2. Did you update the system prompt?
 3. Try explicitly mentioning the tool in your task: "Use calculate_tm to find..."
 
-### What You've Learned
+You now know:
+- Agent architecture (system prompt + tool loop)
+- How tools are defined and registered
+- Agent decision-making
 
-✅ Agent architecture (system prompt + tool loop)
-✅ How tools extend agent capabilities
-✅ Multi-step reasoning (agent chains tool calls)
-✅ Tool design patterns (return dict with success status)
-✅ How to add your own tools
-
-**Next:**
-- demo_04 → Real API tools (UniProt, PubMed, BLAST)
-- demo_05 → LLM-generated tools (no hardcoded logic)
-
----
+Next: demo_04 shows how to connect to real bioinformatics APIs.
+- demo_05 -> LLM-generated tools (no hardcoded logic)
 
 ## Demo 04: Real API Agent
 
@@ -710,8 +632,8 @@ This agent connects to **real databases**:
 Agent workflow:
 1. REFLECT: "I need to find protein function"
 2. PLAN: "Call search_uniprot first"
-3. EXECUTE: search_uniprot("BRCA1") → gets UniProt ID
-4. EXECUTE: get_protein_function("P38398") → gets functions
+3. EXECUTE: search_uniprot("BRCA1") -> gets UniProt ID
+4. EXECUTE: get_protein_function("P38398") -> gets functions
 5. SYNTHESIZE: "BRCA1 is involved in DNA repair..."
 ```
 
@@ -731,11 +653,11 @@ AgentReflection(
 ### Available Tools
 
 | Tool | What It Does | API |
-|------|--------------|-----|
+|------|--------------|------|
 | `search_uniprot` | Find protein by gene name | UniProt |
 | `get_protein_function` | Get function annotations | UniProt |
 | `search_literature` | Search PubMed papers | NCBI |
-| `translate_dna` | DNA → protein | Local |
+| `translate_dna` | DNA -> protein | Local |
 | `find_orfs` | Find coding regions | Local |
 | `reverse_complement` | Get reverse complement | Local |
 | `count_bases` | Calculate GC content | Local |
@@ -841,9 +763,9 @@ agent = AgenticWorkflow(max_iterations=15)
 **Tool returns error:**
 
 Check the error message - common issues:
-- Gene name not found → Try alternative names (e.g., "TP53" vs "p53")
-- Invalid sequence → Ensure only A, T, G, C characters
-- API downtime → Retry later or use fallback tools
+- Gene name not found -> Try alternative names (e.g., "TP53" vs "p53")
+- Invalid sequence -> Ensure only A, T, G, C characters
+- API downtime -> Retry later or use fallback tools
 
 **LLM returns invalid JSON:**
 
@@ -857,7 +779,7 @@ This is rare with `instructor` but can happen. The demo uses `mode=instructor.Mo
 For production decisions, consider these factors:
 
 | Aspect | Demo 03 (Simple Agent) | Demo 04 (Real APIs) | Demo 05 (LLM-Generated) |
-|--------|------------------------|----------------------|--------------------------|
+|------|--------------|------|---|
 | **Tool Implementation** | Handwritten Python functions | API clients + local utils | LLM writes code at runtime |
 | **Latency per Tool Call** | ~10ms (local) | 500-2000ms (network) | 3000-8000ms (LLM + exec) |
 | **Accuracy** | 100% deterministic | API-dependent (95-99%) | ~85-95% (may hallucinate) |
@@ -887,24 +809,21 @@ Use Demo 04 architecture with:
 - Validation layer for LLM-generated outputs
 - Caching for expensive API calls
 
-### What You've Learned
-
-✅ How to connect to real bioinformatics APIs (UniProt, PubMed)
-✅ Agent reflection pattern (think before acting)
-✅ Multi-step reasoning workflows
-✅ Error handling with retry logic
-✅ Conversation memory across iterations
-✅ When to use real APIs vs local computation
+You now know:
+- How to connect to real bioinformatics APIs (UniProt, PubMed)
+- Agent reflection pattern (think before acting)
+- Multi-step reasoning workflows
+- Error handling with retry logic
+- Conversation memory across iterations
+- When to use real APIs vs local computation
 
 **Next:**
-- demo_05 → Understanding LLM limitations (why hybrid matters)
-demo_06 → Fully autonomous investigation
-
----
+- demo_05 -> Understanding LLM limitations (why hybrid matters)
+demo_06 -> Fully autonomous investigation
 
 ## Demo 05: Understanding LLM Limitations
 
-> **⚠️  SKIP THIS DEMO IF:**
+> **WARNING:️  SKIP THIS DEMO IF:**
 > - You already know LLMs don't actually calculate
 > - You just want production patterns
 > - You're short on time
@@ -928,14 +847,14 @@ demo_06 → Fully autonomous investigation
 python demo/demo_05_llm_limitations.py
 ```
 
-### ⚠️  WARNING: Educational Only - Not for Production!
+### WARNING:️  WARNING: Educational Only - Not for Production!
 
 This demo shows what LLMs *appear* to do, but **DO NOT use this pattern for real research**:
 
-- ❌ LLMs don't calculate - they pattern-match from training data
-- ❌ "Confidence scores" are hallucinated (just another generated token)
-- ❌ Arithmetic errors are common, especially with longer sequences
-- ❌ Explanations are plausible reasoning, not actual computational steps
+- (not applicable) LLMs don't calculate - they pattern-match from training data
+- (not applicable) "Confidence scores" are hallucinated (just another generated token)
+- (not applicable) Arithmetic errors are common, especially with longer sequences
+- (not applicable) Explanations are plausible reasoning, not actual computational steps
 
 **This demo exists to teach you what NOT to do.**
 ```python
@@ -962,7 +881,7 @@ LLM_TOOLS = {
 
 ### How It Actually Works
 
-**Common misconception:** "LLM generates code → exec()"
+**Common misconception:** "LLM generates code -> exec()"
 
 **Reality (safer!):** LLM directly computes with explanations:
 
@@ -993,13 +912,13 @@ ToolResult(
 ```
 
 **Why this is better than exec():**
-- ✅ **Safe** - No arbitrary code execution
-- ✅ **Explainable** - LLM generates plausible reasoning
-- ✅ **Debuggable** - You can spot-check explanations
-- ✅ **Flexible** - LLM adapts to edge cases
-- ⚠️  **NOT computation** - LLMs pattern-match, they don't calculate!
+- **Safe** - No arbitrary code execution
+- **Explainable** - LLM generates plausible reasoning
+- **Debuggable** - You can spot-check explanations
+- **Flexible** - LLM adapts to edge cases
+- WARNING:️  **NOT computation** - LLMs pattern-match, they don't calculate!
 
-⚠️  **CRITICAL WARNING: LLMs Don't Actually Calculate!**
+WARNING:️  **CRITICAL WARNING: LLMs Don't Actually Calculate!**
 
 LLMs are **language models**, not calculators:
 - They generate text that LOOKS LIKE calculations based on training patterns
@@ -1017,10 +936,10 @@ LLMs are **language models**, not calculators:
 Demo 05 comes with **8 pre-built LLM tools**:
 
 | Tool | Description |
-|------|-------------|
+|------|--------------|
 | `reverse_complement` | Get reverse complement of DNA |
 | `count_bases` | Count A,T,G,C + calculate GC% |
-| `translate_dna` | DNA → protein (genetic code) |
+| `translate_dna` | DNA -> protein (genetic code) |
 | `find_orfs` | Find open reading frames |
 | `calculate_melting_temp` | Tm using Wallace rule |
 | `gc_skew` | (G-C)/(G+C) ratio |
@@ -1072,23 +991,23 @@ Run the same task on both demos:
 
 ```python
 # Demo 04 (hardcoded)
-# → Fast, 100% accurate, no explanation
+# -> Fast, 100% accurate, no explanation
 
 # Demo 05 (LLM-generated)
-# → Slower, ~95% accurate, full explanation
+# -> Slower, ~95% accurate, full explanation
 ```
 
 ### Troubleshooting
 
-⚠️  **FUNDAMENTAL LIMITATION: LLMs Don't Calculate, They Pattern-Match**
+WARNING:️  **FUNDAMENTAL LIMITATION: LLMs Don't Calculate, They Pattern-Match**
 
 **What's actually happening:**
 
 ```python
-# ❌  WRONG mental model:
-# LLM "counts" bases → "calculates" GC% → "shows work"
+# (not applicable)  WRONG mental model:
+# LLM "counts" bases -> "calculates" GC% -> "shows work"
 
-# ✅  CORRECT mental model:
+#  CORRECT mental model:
 # LLM generates text that looks like:
 #   "Counted G=2, C=2, GC% = 50%"
 # based on patterns it's seen in training
@@ -1097,7 +1016,7 @@ Run the same task on both demos:
 **Confidence scores are meaningless:**
 
 ```python
-# ⚠️  This is DANGEROUS - confidence is hallucinated!
+# WARNING:️  This is DANGEROUS - confidence is hallucinated!
 if result.confidence < 0.8:  # DON'T DO THIS
     print("Low confidence")  # The 0.95 is just as made up!
 ```
@@ -1108,8 +1027,8 @@ An LLM can confidently say 0.95 while being completely wrong.
 **Explanations aren't actual work:**
 
 ```python
-# ❌  WRONG: "The explanation shows the calculation steps"
-# ✅  CORRECT: "The explanation is plausible-sounding reasoning"
+# (not applicable)  WRONG: "The explanation shows the calculation steps"
+#  CORRECT: "The explanation is plausible-sounding reasoning"
 
 # The LLM didn't actually count anything.
 # It generated text that looks like counting.
@@ -1118,12 +1037,12 @@ An LLM can confidently say 0.95 while being completely wrong.
 **What to do instead:**
 
 ```python
-# ✅  CORRECT: Verify with hardcoded tools
+#  CORRECT: Verify with hardcoded tools
 llm_result = agent.run("Calculate GC content of ATGCATGC")
 hardcoded_result = count_bases("ATGCATGC")  # demo_04 tool
 
 if llm_result != hardcoded_result:
-    print("⚠️  LLM pattern-matched incorrectly!")
+    print("WARNING:️  LLM pattern-matched incorrectly!")
 ```
 
 **When LLMs do well:**
@@ -1164,18 +1083,18 @@ agent = LLMGeneratedToolAgent(max_iterations=12)
 ### When to Use LLM-Generated vs Hardcoded
 
 | Scenario | Use Hardcoded (04) | Use LLM-Generated (05) |
-|----------|---------------------|-------------------------|
-| Clinical diagnostics | ✅ | ❌ **DANGEROUS** |
-| Production pipeline | ✅ | ❌ |
-| High-throughput (1000s of sequences) | ✅ | ❌ |
-| Scientific publication | ✅ | ❌ **Must verify** |
-| Rapid prototyping | ❌ | ✅ |
-| Educational demos | ❌ | ✅ **Show limitations!** |
-| One-off exploration | ❌ | ✅ |
-| Need explanations | ❌ | ✅ **But verify!** |
-| Understanding LLM capabilities | ❌ | ✅ **Educational** |
+|------|--------------|------|
+| Clinical diagnostics | Yes | (not applicable) **DANGEROUS** |
+| Production pipeline | Yes | No |
+| High-throughput (1000s of sequences) | Yes | No |
+| Scientific publication | Yes | (not applicable) **Must verify** |
+| Rapid prototyping | No | Yes |
+| Educational demos | No | **Show limitations!** |
+| One-off exploration | No | Yes |
+| Need explanations | No | **But verify!** |
+| Understanding LLM capabilities | No | **Educational** |
 
-⚠️  **Golden rule:** If it matters scientifically, verify with hardcoded tools!
+WARNING:️  **Golden rule:** If it matters scientifically, verify with hardcoded tools!
 
 **Why LLMs aren't calculators:**
 
@@ -1186,17 +1105,16 @@ LLMs are **language models** trained to predict text, not perform calculations:
 - The "explanation" is plausible reasoning, not actual computational steps
 - This is fine for prototyping and education, but NOT for real science
 
-### What You've Learned
-
-✅ LLM as pattern-matcher (not computation)
-✅ Tools as descriptions, not functions
-✅ Direct text generation (safer than exec!)
-✅ Explanations are plausible reasoning, not actual work
-⚠️  **Confidence scores are hallucinated - NEVER trust them!**
-⚠️  **LLMs don't calculate - they pattern-match from training!**
-⚠️  **Verify everything with hardcoded tools for real science!**
-✅ Trade-offs: flexibility vs accuracy vs honesty
-✅ When to use hardcoded vs LLM-generated (and when NOT to)
+You now know:
+- LLM as pattern-matcher (not computation)
+- Tools as descriptions, not functions
+- Direct text generation (safer than exec!)
+- Explanations are plausible reasoning, not actual work
+WARNING:️  **Confidence scores are hallucinated - NEVER trust them!**
+WARNING:️  **LLMs don't calculate - they pattern-match from training!**
+WARNING:️  **Verify everything with hardcoded tools for real science!**
+- Trade-offs: flexibility vs accuracy vs honesty
+- When to use hardcoded vs LLM-generated (and when NOT to)
 
 **Critical takeaways:**
 1. LLMs generate text that LOOKS LIKE calculations
@@ -1224,440 +1142,22 @@ This runs the **same task** on all three architectures and compares:
 Test: Short (8bp) sequence
 Expected GC%: 50.0%
 
-demo_04 (Real API):     50.0%  ✓  0.8s
-demo_05 (LLM pattern):  50.0%  ✓  3.2s  ⚠️  got lucky!
-demo_06 (Hybrid):       50.0%  ✓  1.5s
+demo_04 (Real API):     50.0%   0.8s
+demo_05 (LLM pattern):  50.0%   3.2s  WARNING:️  got lucky!
+demo_06 (Hybrid):       50.0%   1.5s
 
 Test: Long (200bp) sequence
 Expected GC%: 50.0%
 
-demo_04 (Real API):     50.0%  ✓
-demo_05 (LLM pattern):  48.0%  ✗  (LLM lost track!)
-demo_06 (Hybrid):       50.0%  ✓
+demo_04 (Real API):     50.0%  (OK)
+demo_05 (LLM pattern):  48.0%  (not applicable)  (LLM lost track!)
+demo_06 (Hybrid):       50.0%  (OK)
 ```
 
 **Key insight:** LLMs can handle short, common patterns. They fail on longer sequences where they can't rely on training data.
 
 **Next:**
-- demo_06 → Fully autonomous investigation
-
----
-
-## Demo 07: Sequence Characterization (Appendix)
-
-**File:** `demo/demo_07_sequence_characterization.py`
-
-### Where This Fits in the Progression
-
-```
-demo_01 → Basic LLM calls (what can LLMs do?)
-demo_02 → Structured outputs (reliable parsing)
-demo_03 → Simple agent (tool orchestration)
-demo_04 → Real API agent (external databases)
-demo_05 → LLM-generated tools (flexible but unreliable)
-demo_06 → Autonomous investigation (agent + analysis)
-```
-
-**Key insight:** Demo 07 is an **optional deep-dive** into sequence analysis pipelines. Unlike the agent demos (03-06), it skips the LLM entirely and provides a **real bioinformatics pipeline** you can use in actual research.
-
-### What You'll Learn
-
-- **6 analysis components** in one comprehensive pipeline
-- **k-mer frequency analysis** (sequence signatures)
-- **Restriction enzyme mapping** (for cloning)
-- **ORF prediction** (finding genes)
-- **Feature detection** (promoters, CpG islands)
-- **Comparative analysis** (vs random sequences)
-- **When to use pipelines vs agents**
-
-### Why Skip the Agent?
-
-This demo asks: **"Do we always need an LLM?"**
-
-**Answer:** No! For routine sequence analysis:
-
-| Aspect | Agent (03/04/05/06) | Pipeline (07) |
-|--------|-------------------|---------------|
-| Speed | 500ms-8s per sequence | <10ms per sequence |
-| Cost | API calls ($0.001-0.05) | Free (local) |
-| Accuracy | 85-100% (varies) | 100% deterministic |
-| Privacy | Sequences sent to API | All local |
-| Scalability | Slow for 1000s | Batch process easily |
-| Flexibility | High (adapts to questions) | Fixed analysis |
-| Best for | Exploration, Q&A | Production, batch |
-
-**Rule of thumb:**
-- **Exploration** ("What's interesting about this sequence?") → Use agents (04/05/06)
-- **Production** ("Analyze 500 sequences for my paper") → Use pipeline (07)
-
-### Run the Demo
-
-```bash
-python demo/demo_07_sequence_characterization.py
-```
-
-### What You Get
-
-A **complete analysis report** for each sequence:
-
-```
-SEQUENCE: Promoter + start codon region
-Input: TATAAAGGCCACCATGGCTGACTACGTAGCTAG
-
---- Quick Summary ---
-Length: 33 bp
-GC Content: 51.52%
-ORFs found: 1
-Restriction sites: 3 enzymes
-TATA box: YES (at position 0)
-k-mer correlation vs random: 0.85
-Interpretation: Non-random sequence with regulatory features
-```
-
-### Analysis Components (Deep Dive)
-
-#### 1. Basic Statistics
-
-**What it computes:**
-- Length (bp)
-- GC content (%)
-- Base composition (A%, T%, G%, C%)
-
-**Biological meaning:**
-- **GC%** affects DNA stability (higher GC = higher melting temp)
-- **Base composition** biases reveal evolutionary pressures
-- **Length** determines analysis approach (short reads vs long reads)
-
-**Lab applications:**
-- PCR primer design (need specific GC% and Tm)
-- Sequencing quality control (unexpected composition = contamination)
-
-#### 2. k-mer Analysis
-
-**What it computes:**
-- Frequency of all k-mers (k=1,2,3,4)
-- Comparison to expected random frequencies
-- Correlation coefficient
-
-**Biological meaning:**
-- **Non-random patterns** = functional elements
-- **CpG suppression** = methylation signatures
-- **Codon bias** = organism-specific translation efficiency
-
-**Example:**
-```
-Sequence: ATGCATGC
-1-mer: A=25%, T=25%, G=25%, C=25% (uniform)
-2-mer: AT=25%, TG=25%, GC=25%, CA=25% (repeating pattern)
-
-Correlation vs random: 0.95 → Strong non-random structure!
-```
-
-#### 3. Restriction Enzyme Map
-
-**What it computes:**
-- Cut sites for common enzymes (EcoRI, BamHI, HindIII, etc.)
-- Fragment sizes if digested
-
-**Biological meaning:**
-- **Cloning strategy** - where to cut/insert
-- **Genotyping** - RFLP markers
-- **Sequence verification** - expected pattern matches?
-
-**Lab applications:**
-```
-EcoRI (G^AATTC) cuts at position 45
-BamHI (G^GATCC) cuts at position 123
-→ Clone insert between these sites
-→ Expected fragments: 45bp, 78bp, 200bp
-```
-
-#### 4. ORF (Open Reading Frame) Prediction
-
-**What it computes:**
-- All ATG start codons
-- Stop codons (TAA, TAG, TGA) in same frame
-- ORF length (amino acids)
-
-**Biological meaning:**
-- **Long ORFs** (>100 aa) = potential protein-coding genes
-- **Short ORFs** = regulatory peptides or random
-- **Frame shifts** = sequencing errors or real mutations
-
-**Lab applications:**
-- Gene discovery in new sequences
-- Mutation detection (premature stop codons)
-- Synthetic biology (design coding regions)
-
-#### 5. Feature Detection
-
-**What it finds:**
-- **TATA box** (TATAAA) - promoter element
-- **CpG islands** - methylation regions
-- **Poly-A signals** (AATAAA) - transcription termination
-- **Start codons** (ATG) - translation start
-
-**Biological meaning:**
-- **TATA box** = gene promoter (transcription start)
-- **CpG islands** = gene regulation (methylation = silencing)
-- **Poly-A signal** = mRNA processing
-
-**Lab applications:**
-- Promoter identification
-- Epigenetic analysis
-- Gene annotation
-
-#### 6. Comparative Analysis
-
-**What it does:**
-- Generates random sequence with same composition
-- Compares k-mer frequencies
-- Reports correlation coefficient
-
-**Biological meaning:**
-- **Correlation ~1.0** = sequence looks random (no structure)
-- **Correlation <<1.0** = strong non-random patterns (functional)
-
-**Example interpretation:**
-```
-Correlation: 0.85 → Non-random sequence with regulatory features
-Correlation: 0.99 → Mostly random (maybe intergenic region)
-Correlation: 0.50 → Highly structured (likely coding or regulatory)
-```
-
-### Try It Yourself
-
-**Exercise 1: Analyze a promoter sequence**
-
-```python
-from extensions.extension_07_sequence_characterization import SequenceCharacterizer
-
-char = SequenceCharacterizer()
-
-# Typical mammalian promoter
-promoter = "TATAAAGGCCACCATGGCTGACTACGTAGCTAG"
-report = char.analyze(promoter, name="Sample Promoter")
-
-print(f"GC%: {report['basic_stats']['gc_content']}")
-print(f"TATA box: {report['features']['tata_box']}")
-print(f"ORFs: {report['orf_analysis']['orf_count']}")
-```
-
-**Exercise 2: Compare coding vs non-coding**
-
-```python
-# Coding sequence (from a real gene)
-coding = "ATGGCTGACTACGTAGCTAGCTAGCTAGCTAGCTAGCTAG"
-
-# Non-coding (random intergenic)
-noncoding = "ATATATATATGCGCGCGCGCATATATATATGCGCGC"
-
-coding_report = char.analyze(coding, name="Coding")
-noncoding_report = char.analyze(noncoding, name="Non-coding")
-
-# Compare
-print(f"Coding ORFs: {coding_report['orf_analysis']['orf_count']}")
-print(f"Non-coding ORFs: {noncoding_report['orf_analysis']['orf_count']}")
-
-print(f"Coding k-mer correlation: {coding_report['comparative']['kmer_correlation']}")
-print(f"Non-coding k-mer correlation: {noncoding_report['comparative']['kmer_correlation']}")
-```
-
-**Expected insight:** Coding sequences typically have:
-- Longer ORFs
-- Lower k-mer correlation (more structured)
-- Codon bias (non-uniform 3-mer frequencies)
-
-**Exercise 3: Design a cloning strategy**
-
-```python
-# Your insert sequence
-insert = "GAATTCATGGCTGACTACGGATCCGTAGCTAG"
-
-report = char.analyze(insert, name="Cloning Insert")
-
-# Find restriction sites
-print("\nRestriction sites for cloning:")
-for enzyme, positions in report['restriction_map']['sites'].items():
-    if positions:  # Only show enzymes that cut
-        print(f"  {enzyme}: positions {positions}")
-
-# Design strategy:
-# 1. Cut with enzymes that flank your insert
-# 2. Ensure they don't cut inside your insert
-# 3. Match with vector polylinker
-```
-
-**Exercise 4: Batch analysis**
-
-```python
-# Analyze multiple sequences (e.g., from a sequencing run)
-sequences = [
-    ("Sample_001", "ATGCATGCATGCATGC"),
-    ("Sample_002", "GCGCGCGCGCGCGCGC"),
-    ("Sample_003", "ATATATATATATATAT"),
-]
-
-results = []
-for name, seq in sequences:
-    report = char.analyze(seq, name=name)
-    results.append({
-        'name': name,
-        'length': report['basic_stats']['length'],
-        'gc_content': report['basic_stats']['gc_content'],
-        'orf_count': report['orf_analysis']['orf_count'],
-    })
-
-# Export to CSV for downstream analysis
-import csv
-with open('batch_analysis.csv', 'w', newline='') as f:
-    writer = csv.DictWriter(f, fieldnames=['name', 'length', 'gc_content', 'orf_count'])
-    writer.writeheader()
-    writer.writerows(results)
-```
-
-### Troubleshooting
-
-**Long sequences (>10kb) are slow:**
-
-The k-mer analysis computes all possible k-mers, which grows exponentially:
-- k=1: 4 possibilities
-- k=2: 16 possibilities
-- k=3: 64 possibilities
-- k=4: 256 possibilities
-
-For very long sequences, consider:
-```python
-# Analyze in chunks
-chunk_size = 1000
-for i in range(0, len(sequence), chunk_size):
-    chunk = sequence[i:i+chunk_size]
-    report = char.analyze(chunk, name=f"Chunk_{i}")
-```
-
-**No ORFs found:**
-
-This is expected for:
-- Short sequences (<30 bp)
-- Non-coding regions (promoters, enhancers)
-- Sequences without ATG start codons
-
-**Solution:** Check if your sequence is expected to be coding. For promoter analysis, use feature detection instead.
-
-**Restriction map shows too many cuts:**
-
-Some enzymes are **frequent cutters** (4-base recognition):
-- AluI (AG^CT) - cuts every ~256 bp on average
-- MspI (C^CGG) - cuts every ~256 bp
-
-For cloning, prefer **rare cutters** (6-8 base recognition):
-- NotI (GC^GGCCGC) - 8 bases, cuts every ~65kb
-- AscI (GG^CGCGCC) - 8 bases
-
-**k-mer correlation always high:**
-
-Short sequences (<50 bp) naturally look random. The correlation is most meaningful for:
-- Sequences >100 bp
-- Comparing multiple sequences (relative, not absolute)
-
-**TATA box not detected:**
-
-Not all promoters have TATA boxes! Many genes use:
-- CpG islands (housekeeping genes)
-- Alternative core promoters (Inr, DPE elements)
-
-Absence of TATA box ≠ not a promoter.
-
-### When to Use This vs Agent Demos
-
-| Scenario | Use Demo 07 (Pipeline) | Use Demo 04/05 (Agent) |
-|----------|----------------------|-------------------------|
-| Analyze 500 sequences | ✅ Batch process | ❌ Too slow/expensive |
-| "What's interesting here?" | ❌ Fixed analysis | ✅ Explores adaptively |
-| Cloning design | ✅ Restriction map | ❌ May hallucinate sites |
-| Paper methods section | ✅ Cite exact algorithm | ❌ LLM = not reproducible |
-| Quick one-off question | ❌ Overkill | ✅ Fast answer |
-| Privacy-sensitive data | ✅ All local | ❌ API sends data |
-| Teaching bioinformatics | ✅ Show real algorithms | ✅ Show LLM capabilities |
-| Production pipeline | ✅ Deterministic | ❌ Unreliable |
-
-### What You've Learned
-
-✅ **Comprehensive analysis** - 6 components in one pipeline
-✅ **k-mer signatures** - detect non-random patterns
-✅ **Restriction mapping** - plan cloning strategies
-✅ **ORF prediction** - find potential genes
-✅ **Feature detection** - identify regulatory elements
-✅ **Comparative analysis** - distinguish functional from random
-✅ **Pipeline vs agent trade-offs** - when to skip the LLM
-
-**Key insights:**
-1. **Not every problem needs an LLM** - sometimes you just need solid algorithms
-2. **Local computation** = fast, private, reproducible
-3. **Biological meaning** matters more than raw statistics
-4. **Production workflows** benefit from deterministic pipelines
-5. **Agents + pipelines** = best of both worlds (demo_06)
-
-**Next steps:**
-- → Try your own sequences (promoters, genes, primers)
-- → Integrate into your analysis workflow
-- → Export results for publications
-- → demo_06: Autonomous investigation (agent uses this pipeline!)
-
----
-
-### 🔍 Detective Mode (Advanced)
-
-**File:** `demo/demo_07b_detective.py`
-
-Want to make sequence analysis more like a **mystery investigation**? The detective mode adds:
-
-| Feature | Characterizer (demo_07) | Detective (demo_07b) |
-|---------|------------------------|---------------------|
-| **Approach** | Comprehensive pipeline | Hypothesis-driven |
-| **API** | None (all local) | NCBI BLAST |
-| **Output** | Statistical report | Hypothesis + confidence |
-| **Special** | Technical details | Mystery challenges |
-
-**Detective workflow:**
-```python
-from extensions.extension_05_detective import SequenceDetective
-
-detective = SequenceDetective()
-
-# Mystery sequence challenge
-report = detective.investigate("TATAAAAGGCCACCATGGCT", use_cache=False)
-
-print(f"Hypothesis: {report['hypothesis']}")
-# Output: "This is likely a promoter region with start codon"
-print(f"Confidence: {report['confidence']}")
-# Output: 0.85
-```
-
-**What the detective does:**
-1. Analyzes sequence properties (GC%, motifs)
-2. BLAST search against NCBI database
-3. Identifies organism/gene from taxonomy
-4. Generates hypothesis with confidence score
-
-**Try the mystery challenges:**
-
-```python
-MYSTERIES = {
-    "Mystery A": "TATAAAAGGCCACCATGGCT",  # Promoter + start codon
-    "Mystery B": "AATAAAGCGCGCGCGCGCGC",  # PolyA + CpG island
-}
-
-for name, seq in MYSTERIES.items():
-    report = detective.investigate(seq)
-    print(f"{name}: {report['hypothesis']}")
-```
-
-**When to use which:**
-- **Characterizer (demo_07)**: Routine analysis, batch processing, publication figures
-- **Detective (demo_07b)**: Unknown sequences, teaching challenges, exploration
-
----
+- demo_06 -> Fully autonomous investigation
 
 ## Demo 06: Hybrid Autonomous Investigation
 
@@ -1668,12 +1168,12 @@ for name, seq in MYSTERIES.items():
 This is the **culmination** of everything you've learned:
 
 ```
-demo_01 → Basic LLM calls (what can LLMs do?)
-demo_02 → Structured outputs (reliable parsing)
-demo_03 → Simple agent (tool orchestration)
-demo_04 → Real API agent (external databases)
-demo_05 → LLM pattern-matching (EDUCATIONAL ONLY!)
-demo_06 → HYBRID (autonomous planning + real tools) ← YOU ARE HERE
+demo_01 -> Basic LLM calls (what can LLMs do?)
+demo_02 -> Structured outputs (reliable parsing)
+demo_03 -> Simple agent (tool orchestration)
+demo_04 -> Real API agent (external databases)
+demo_05 -> LLM pattern-matching (EDUCATIONAL ONLY!)
+demo_06 -> HYBRID (autonomous planning + real tools) <- YOU ARE HERE
 ```
 
 **Key insight:** demo_06 combines the **best of both worlds**:
@@ -1683,10 +1183,9 @@ demo_06 → HYBRID (autonomous planning + real tools) ← YOU ARE HERE
 ### The Evolution of Autonomy
 
 | Approach | Planning | Computation | Interpretation | Production Ready? |
-|----------|----------|-------------|----------------|-------------------|
-| Hardcoded (demo_07) | Human | Python (100%) | Human | ✅ Yes |
-| Pure LLM (demo_05) | Human | LLM (pattern-match) | LLM | ❌ Educational only |
-| **Hybrid (demo_06)** | **LLM** | **Python (100%)** | **LLM** | ✅ **Yes!** |
+|------|--------------|------|---|---|
+| Pure LLM (demo_05) | Human | LLM (pattern-match) | LLM | (not applicable) Educational only |
+| **Hybrid (demo_06)** | **LLM** | **Python (100%)** | **LLM** | **Yes!** |
 
 **Why hybrid wins:**
 - LLM for **what it does well**: planning, reasoning, interpretation
@@ -1697,7 +1196,7 @@ demo_06 → HYBRID (autonomous planning + real tools) ← YOU ARE HERE
 
 - **Hybrid agent architecture** - LLM reasoning + real tools
 - **Autonomous planning** - agent decides what to analyze
-- **Real tool integration** - SequenceCharacterizer from demo_07
+- **Real tool integration** - Built-in SequenceCharacterizer (100% accurate)
 - **Biological interpretation** - LLM generates hypotheses
 - **Scientific reasoning** - alternative explanations, limitations
 - **Production pattern** - how to build real bioinformatics agents
@@ -1711,35 +1210,35 @@ python demo/demo_06_hybrid_autonomous.py
 ### The Hybrid Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  HUMAN ASKS: "What can you tell me about this sequence?"            │
-└─────────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────────┐
-│  LLM PLANS (Autonomous Decision-Making):                            │
-│  "Let me run full characterization first..."                        │
-│  "Interesting! GC% is 55%. Let me investigate ORFs..."              │
-│  "Found a TATA box! This might be regulatory..."                    │
-│  "I have enough to conclude"                                        │
-└─────────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────────┐
-│  REAL TOOLS EXECUTE (100% Accurate Computation):                    │
-│  → SequenceCharacterizer.analyze()                                  │
-│     - GC%: 55.2% (real algorithm)                                   │
-│     - ORFs: 3 found (real algorithm)                                │
-│     - TATA box: position 0 (real pattern match)                     │
-│     - Restriction sites: 5 enzymes (real database lookup)           │
-└─────────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────────┐
-│  LLM INTERPRETS (Biological Reasoning):                             │
-│  "This looks like a promoter region because:"                       │
-│  "  - TATA box at position 0"                                       │
-│  "  - High GC% suggests CpG island"                                 │
-│  "  - Short ORF downstream could be regulatory peptide"             │
-│  "Confidence: Medium - needs experimental validation"               │
-└─────────────────────────────────────────────────────────────────────┘
+
+|  HUMAN ASKS: "What can you tell me about this sequence?"            |
+
+                              v
+
+|  LLM PLANS (Autonomous Decision-Making):                            |
+|  "Let me run full characterization first..."                        |
+|  "Interesting! GC% is 55%. Let me investigate ORFs..."              |
+|  "Found a TATA box! This might be regulatory..."                    |
+|  "I have enough to conclude"                                        |
+
+                              v
+
+|  REAL TOOLS EXECUTE (100% Accurate Computation):                    |
+|  -> SequenceCharacterizer.analyze()                                  |
+|     - GC%: 55.2% (real algorithm)                                   |
+|     - ORFs: 3 found (real algorithm)                                |
+|     - TATA box: position 0 (real pattern match)                     |
+|     - Restriction sites: 5 enzymes (real database lookup)           |
+
+                              v
+
+|  LLM INTERPRETS (Biological Reasoning):                             |
+|  "This looks like a promoter region because:"                       |
+|  "  - TATA box at position 0"                                       |
+|  "  - High GC% suggests CpG island"                                 |
+|  "  - Short ORF downstream could be regulatory peptide"             |
+|  "Confidence: Medium - needs experimental validation"               |
+
 ```
 
 ### What Makes It Hybrid (Not Pure LLM)?
@@ -1747,21 +1246,21 @@ python demo/demo_06_hybrid_autonomous.py
 **Critical difference from demo_05:**
 
 | Aspect | demo_05 (Pure LLM) | demo_06 (Hybrid) |
-|--------|---------------------|-------------------|
+|------|--------------|------|
 | **GC% calculation** | LLM pattern-matches | SequenceCharacterizer (real algorithm) |
 | **ORF finding** | LLM guesses | SequenceCharacterizer (real algorithm) |
 | **Restriction sites** | LLM hallucinates | SequenceCharacterizer (database lookup) |
 | **Confidence** | Hallucinated token | 1.0 for real computation |
-| **Production use** | ❌ DANGEROUS | ✅ Safe + Reliable |
+| **Production use** | (not applicable) DANGEROUS | Safe + Reliable |
 
 **The agent NEVER does calculation itself!**
 
 ```python
-# ❌ WRONG (demo_05 pattern):
+# (not applicable) WRONG (demo_05 pattern):
 result = llm.call("Calculate GC% of ATGCATGC")
 # LLM pattern-matches, might be wrong
 
-# ✅ CORRECT (demo_06 pattern):
+# CORRECT (demo_06 pattern):
 plan = llm.call("What should I analyze?")  # LLM reasoning
 result = characterizer.analyze(seq)  # Real computation
 interpretation = llm.call("What does this mean?")  # LLM reasoning
@@ -1778,20 +1277,20 @@ Sequence: TATAAAGGCCACCATGGCTGACTACGTAGCTAG
 Iteration 1:
   📋 LLM Plan: "Run full characterization first"
   🔬 Real Tools: SequenceCharacterizer.analyze()
-     → GC%: 51.52%, ORFs: 1, TATA box: YES
-  ✓ Agent: "Interesting findings! Let me investigate further"
+     -> GC%: 51.52%, ORFs: 1, TATA box: YES
+  Agent: "Interesting findings! Let me investigate further"
 
 Iteration 2:
   📋 LLM Plan: "The TATA box suggests promoter. Check features."
   🔬 Real Tools: Extract from characterization report
-     → TATA at position 0, CpG island detected
-  ✓ Agent: "This looks regulatory. Let me check ORFs"
+     -> TATA at position 0, CpG island detected
+  Agent: "This looks regulatory. Let me check ORFs"
 
 Iteration 3:
   📋 LLM Plan: "Analyze the ORF - is it coding?"
   🔬 Real Tools: ORF analysis from report
-     → 1 ORF, 33 amino acids (short)
-  ✓ Agent: "Short ORF + TATA = likely regulatory peptide"
+     -> 1 ORF, 33 amino acids (short)
+  Agent: "Short ORF + TATA = likely regulatory peptide"
 
 Iteration 4:
   📋 LLM Plan: "Have enough evidence. Generate conclusion."
@@ -1803,10 +1302,10 @@ Iteration 4:
 The agent provides:
 
 - 📋 **Key Findings** - What it discovered (from real tools!)
-- 🧬 **Interpretation** - What it means biologically (LLM reasoning)
+- DNA **Interpretation** - What it means biologically (LLM reasoning)
 - 📊 **Evidence** - Data supporting conclusions (real numbers)
 - 🤔 **Alternative Explanations** - Scientific skepticism
-- ⚠️ **Limitations** - Intellectual honesty
+- WARNING:️ **Limitations** - Intellectual honesty
 - ❓ **Follow-up Questions** - What to investigate next
 
 ### Try It Yourself
@@ -1814,8 +1313,6 @@ The agent provides:
 **Exercise 1: Promoter identification**
 
 ```python
-from extensions.extension_06_hybrid_autonomous import AutonomousSequenceAgent
-
 agent = AutonomousSequenceAgent(max_iterations=4)
 
 # Promoter region
@@ -1846,11 +1343,11 @@ print(f"Interpretation: {report['summary']['biological_interpretation']}")
 seq = "ATGCATGCATGCATGCATGCATGCATGC"
 
 # demo_05 (pure LLM - educational)
-# → LLM pattern-matches GC%, might be wrong
+# -> LLM pattern-matches GC%, might be wrong
 
 # demo_06 (hybrid - production)
-# → SequenceCharacterizer computes GC% (100% accurate)
-# → LLM interprets what it means
+# -> SequenceCharacterizer computes GC% (100% accurate)
+# -> LLM interprets what it means
 
 # Compare results - hybrid should be more reliable!
 ```
@@ -1890,112 +1387,56 @@ Remember: confidence is LLM-generated (like demo_05). The **data** is real, but 
 ### When to Use Hybrid vs Other Approaches
 
 | Scenario | Use Demo 07 | Use Demo 05 | Use Demo 06 |
-|----------|-------------|--------------|--------------|
-| Batch analysis (1000s of seqs) | ✅ | ❌ | ❌ |
-| Quick calculation | ✅ | ⚠️ | ⚠️ |
-| **Exploratory research** | ❌ | ⚠️ | ✅ |
-| **Hypothesis generation** | ❌ | ⚠️ | ✅ |
-| **Open-ended questions** | ❌ | ⚠️ | ✅ |
-| Production pipeline | ✅ | ❌ | ⚠️ |
-| **Research assistant** | ❌ | ❌ | ✅ |
-| Educational demo | ✅ | ✅ (limitations) | ✅ (best practice) |
+|----------|-------------|-------------|-------------|
+| Batch analysis (1000s of seqs) | Yes | No | No |
+| Quick calculation | Yes | Caution | Caution |
+| Exploratory research | No | Caution | Yes |
+| Hypothesis generation | No | Caution | Yes |
+| Open-ended questions | No | Caution | Yes |
+| Production pipeline | Yes | No | Caution |
+| Research assistant | No | No | Yes |
+| Educational demo | Yes | Yes (limitations) | Yes (best practice) |
 
-**Key insight:** demo_06 is your **AI research partner** - autonomous, insightful, but backed by real data.
+Key insight: demo_06 is your AI research partner - autonomous, insightful, but backed by real data.
 
-### What You've Learned
+You now know:
+- Hybrid architecture - LLM planning + real tools
+- Autonomous investigation - agent decides what to analyze
+- Real computation - SequenceCharacterizer (100% accurate)
+- Biological interpretation - LLM generates hypotheses
+- Scientific reasoning - alternative explanations, limitations
+- Production pattern - how to build real bioinformatics agents
 
-✅ **Hybrid architecture** - LLM planning + real tools
-✅ **Autonomous investigation** - agent decides what to analyze
-✅ **Real computation** - SequenceCharacterizer (100% accurate)
-✅ **Biological interpretation** - LLM generates hypotheses
-✅ **Scientific reasoning** - alternative explanations, limitations
-✅ **Production pattern** - how to build real bioinformatics agents
+**Summary:**
 
-**The grand synthesis:**
+1. demo_01-02: LLM basics (calls, structured outputs)
+2. demo_03-05: Agent patterns (orchestration, APIs, pattern-matching)
+3. demo_06: HYBRID (autonomous + accurate = production-ready)
 
-1. **demo_01-02**: LLM basics (calls, structured outputs)
-2. **demo_03-05**: Agent patterns (orchestration, APIs, pattern-matching)
-3. **demo_07**: Production pipelines (no agent, all accuracy)
-4. **demo_06**: **HYBRID** (autonomous + accurate = production-ready!)
-
-**This is the power of understanding LLMs:**
-- Know what they're bad at → use real tools
-- Know what they're good at → use LLM creativity
-- Best of both worlds!
-
-**Next steps:**
-- → Try both modes on your sequences
-- → Add your own creative tools (roasts, raps, memes)
-- → Use fun mode for teaching, serious for research
-- → Build hybrid agents for your specific domain
-
----
-
-## Extension Demos
-
-The `extensions/` directory contains reusable components:
-
-| Extension | What It Adds |
-|-----------|--------------|
-| `extension_01_memory.py` | Conversation persistence |
-| `extension_02_batch.py` | Batch processing |
-| `extension_03_export.py` | JSON/CSV/Markdown export |
-| `extension_04_apis.py` | Real API clients |
-| `extension_05_detective.py` | Sequence detective |
-
-### Example: Using Extensions
-
-```python
-# Memory - continue conversations across sessions
-from extensions.extension_01_memory import MemoryAgent
-
-agent = MemoryAgent(history_file="session.json")
-agent.run("Remember I'm studying BRCA1")
-# Later...
-agent2 = MemoryAgent(history_file="session.json")
-agent2.run("What gene was I studying?")  # Remembers!
-
-# Batch - process multiple sequences at once
-from extensions.extension_02_batch import BatchAgent
-
-agent = BatchAgent()
-agent.run("Analyze: ATGC, GCGCGC, ATATATAT")
-
-# Export - save results
-from extensions.extension_03_export import export_all_formats
-
-results = [{"id": "seq1", "gc_content": 50.0}]
-export_all_formats(results, "output", title="My Analysis")
-# Creates: output.json, output.csv, output.md
-```
-
----
+Understanding LLMs means: know what they are bad at (use real tools), know what they are good at (use LLM creativity).
 
 ## Learning Path
 
 ### For Beginners
 
 Start here:
-1. demo_01 → Understand LLM basics
-2. demo_02 → Structured outputs
-3. demo_03 → See simple agent
+1. demo_01 -> Understand LLM basics
+2. demo_02 -> Structured outputs
+3. demo_03 -> See simple agent
 
 ### For Intermediate Users
 
 Try these:
-1. demo_04 → Real APIs
-2. demo_05 → LLM-generated tools
-3. demo_06 → Hybrid autonomous agent
-4. demo_07 → Local sequence analysis (optional)
-5. extensions → Reuse components
+1. demo_04 -> Real APIs
+2. demo_05 -> LLM-generated tools
+3. demo_06 -> Hybrid autonomous agent
+4. Modify and extend!
 
 ### For Advanced Users
 
 Explore:
-1. demo_06 → Full autonomy
+1. demo_06 -> Full autonomy
 2. Modify and extend!
-
----
 
 ## Troubleshooting
 
@@ -2020,19 +1461,15 @@ pip install --upgrade instructor requests openai pydantic
 - Simplify the task
 - Check tool definitions
 
----
-
 ## Next Steps
 
-### What You've Learned
-
-✅ Basic LLM API calls (demo_01)
-✅ Structured outputs with validation (demo_02)
-✅ Simple agent architecture (demo_03)
-✅ Real bioinformatics APIs (demo_04)
-✅ LLM pattern-matching limitations (demo_05)
-✅ Local sequence analysis pipeline (demo_07)
-✅ Hybrid autonomous investigation (demo_06)
+You now know:
+- Basic LLM API calls (demo_01)
+- Structured outputs with validation (demo_02)
+- Simple agent architecture (demo_03)
+- Real bioinformatics APIs (demo_04)
+- LLM pattern-matching limitations (demo_05)
+- Hybrid autonomous investigation (demo_06)
 
 ### Where to Go Next
 
@@ -2048,12 +1485,8 @@ pip install --upgrade instructor requests openai pydantic
 - [UniProt API](https://www.uniprot.org/help/api_queries)
 - [NCBI E-utilities](https://www.ncbi.nlm.nih.gov/books/NBK25501/)
 
----
-
 ## Get Help
 
 - Check existing issues in the repository
 - Read the code comments (they're detailed!)
 - Experiment and learn by doing
-
-**Happy coding! 🧬🤖**
