@@ -1,49 +1,44 @@
 """
-demo_03_agent.py - Test simple agent with tools
+demo_03_simple_agent.py - Simple Agent with Tool Calling
 
-This is a SIMPLIFIED version of the agent demo - perfect for learning!
+The key insight: an LLM alone just generates text. Give it tools and a loop,
+and it becomes an agent -- a system that can plan, act, observe results,
+and adapt. This is the ReAct pattern (Reason + Act), used in DSPy, LangChain, etc.
 
-What this demo shows:
-- Basic agent architecture (system prompt + tool loop)
-- How tools are defined and registered
-- Agent decision-making (call tools vs give final answer)
-- Conversation history management
+The loop:
+    1. PLAN  -- LLM receives task + available tools, decides what to do
+    2. ACT   -- we execute the tool calls it requested
+    3. OBSERVE -- tool results are appended to conversation history
+    4. REFLECT -- LLM sees results, decides next action or declares done
 
-DIFFERENCE FROM OTHER DEMOS:
-- demo_04: Real API tools (BLAST, UniProt, PubMed)
-- demo_05: LLM-generated tools (no hardcoded logic)
-- demo_03: Simple hardcoded tools (learning version)
+Why this works: each iteration, the LLM sees the full trail of its decisions
+and their outcomes. It's not just answering a question -- it's conducting an
+investigation, using tools to gather evidence, then synthesizing a conclusion.
 
-START HERE if you're new to agents!
+This is a learning version with simple hardcoded tools.
+For real API tools see demo_04; for LLM-generated tools see demo_05.
+
 """
-
-# =============================================================================
-# IMPORTS
-# =============================================================================
 
 import instructor
 from pydantic import BaseModel, Field
 from openai import OpenAI
 
-
-# =============================================================================
-# CONFIGURATION
-# =============================================================================
-# API credentials - hardcoded for demo (use env vars in production!)
-
-API_KEY = "your-api-key"
+# Configuration
+API_KEY="your-api-key"
 API_BASE = "https://denbi-llm-api.bihealth.org/v1"
 MODEL = "qwen3.5-fp8"
-MAX_TOKENS = 8192
-
-# Timeout for API calls (seconds)
+MAX_TOKENS = 2048
 TIMEOUT = 300
 
-# =============================================================================
-# LLM CLIENT SETUP
-# =============================================================================
-# instructor forces the LLM to return structured JSON matching our Pydantic models
-# This is CRITICAL for reliable agent behavior!
+# Disable Chain-of-Thought. We want direct JSON, not reasoning traces.
+# Reduces tokens, speeds up response, cleaner output for parsing.
+EXTRA_BODY = {
+    "chat_template_kwargs": {
+        "enable_thinking": False,
+        "preserve_thinking": False
+    }
+}
 
 client = instructor.from_openai(
     OpenAI(base_url=API_BASE, api_key=API_KEY, timeout=TIMEOUT),
@@ -52,31 +47,15 @@ client = instructor.from_openai(
 
 
 # =============================================================================
-# TOOL DEFINITIONS
+# TOOLS -- deterministic functions the agent can call
 # =============================================================================
-# Tools are Python functions the agent can call to get REAL information
-#
-# Why tools matter:
-# - LLMs can't actually COMPUTE (they're language models, not calculators)
-# - Tools let the LLM interact with the real world
-# - Each tool is like a "superpower" you give the agent
-#
-# Tool design principles:
-# 1. Clear, descriptive names
-# 2. Typed parameters
-# 3. Return dict with 'success' status
-# 4. Handle errors gracefully
-# =============================================================================
+# Tools are pure Python functions. They run locally, instantly, with 100% accuracy.
+# The LLM never executes code -- it only decides which tool to call and with
+# what arguments. We then execute the real function and feed results back.
+# This separation (LLM for planning, Python for execution) is the whole point.
 
 def reverse_complement(sequence: str) -> dict:
-    """
-    Return the reverse complement of a DNA sequence.
-
-    DNA has two strands that pair: A↔T, G↔C
-    Reverse complement = read backwards + swap bases
-
-    Example: ATGC → GCAT
-    """
+    """Return the reverse complement of a DNA sequence."""
     complement = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G'}
     try:
         rc = ''.join(complement[b] for b in reversed(sequence.upper()))
@@ -86,12 +65,7 @@ def reverse_complement(sequence: str) -> dict:
 
 
 def count_bases(sequence: str) -> dict:
-    """
-    Count occurrences of each base and calculate GC content.
-
-    GC content = (G + C) / total × 100
-    High GC% = more stable DNA (3 H-bonds vs 2 for AT)
-    """
+    """Count occurrences of each base and calculate GC content."""
     try:
         counts = {b: sequence.upper().count(b) for b in 'ATGC'}
         total = len(sequence)
@@ -102,11 +76,7 @@ def count_bases(sequence: str) -> dict:
 
 
 def explain_concept(concept: str) -> dict:
-    """
-    Get explanation of a bioinformatics concept.
-
-    Simple lookup table - in production, might call LLM or query database.
-    """
+    """Get explanation of a bioinformatics concept."""
     explanations = {
         "gc_content": "GC content is the percentage of G and C bases in DNA.",
         "reverse_complement": "DNA sequence read backwards with complements (A-T, G-C).",
@@ -115,112 +85,86 @@ def explain_concept(concept: str) -> dict:
 
 
 def find_motif(sequence: str, motif: str) -> dict:
-    """
-    Find all occurrences of a motif in a DNA sequence.
-
-    A motif is a short DNA pattern with biological significance:
-    - ATG = Start codon (where proteins begin)
-    - TATAAA = TATA box (promoter element)
-    - AATAAA = Poly-A signal (transcription termination)
-
-    This finds ALL positions including overlapping matches.
-    Example: "AAA" contains "AA" at positions 0 AND 1.
-
-    Args:
-        sequence: DNA sequence to search
-        motif: Pattern to find (e.g., "ATG" for start codons)
-
-    Returns:
-        dict with success, motif, count, and positions (0-based)
-    """
+    """Find all occurrences of a motif in a DNA sequence (including overlapping)."""
     try:
         positions = []
         start = 0
         seq_upper = sequence.upper()
         motif_upper = motif.upper()
 
-        # Find all occurrences (including overlapping)
         while True:
             pos = seq_upper.find(motif_upper, start)
             if pos == -1:
                 break
             positions.append(pos)
-            start = pos + 1  # Move by 1 to catch overlaps
+            start = pos + 1
 
-        return {
-            "success": True,
-            "motif": motif,
-            "count": len(positions),
-            "positions": positions
-        }
+        return {"success": True, "motif": motif, "count": len(positions), "positions": positions}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
 
-# =============================================================================
-# TOOLS REGISTRY
-# =============================================================================
-# Maps tool names to actual functions
-# Agent says "call count_bases" → we look it up here and execute
-#
-# START HERE when adding new tools:
-# 1. Define the function above
-# 2. Add it to this dictionary
-# 3. Update the system prompt below
-
+# Tool Registry -- the agent's "menu" of available capabilities.
+# Keys are tool names the LLM can reference. Values are the actual functions.
+# This indirection lets us add/remove tools without changing agent logic.
 TOOLS = {
     "reverse_complement": reverse_complement,
     "count_bases": count_bases,
     "explain_concept": explain_concept,
-    "find_motif": find_motif,  # NEW: Find DNA motifs
+    "find_motif": find_motif,
 }
 
 
+# Agent Response Models
 # =============================================================================
-# AGENT RESPONSE MODELS
+# AGENT RESPONSE MODELS -- what the LLM decides each iteration
 # =============================================================================
-# Pydantic models define the STRUCTURE of agent responses
-# instructor ensures LLM returns valid JSON matching these models
-# =============================================================================
+# The agent doesn't just output text. It outputs a structured decision:
+#   - tool_calls: which tools to invoke and why
+#   - done: whether the task is complete
+#   - final_answer: the answer (only if done=True)
+#
+# This is the decision interface. The LLM fills in these fields, we execute.
+# Instructor validates the structure so we always get parseable output.
 
 class ToolCall(BaseModel):
-    """Represents a tool call from the agent."""
+    """One tool invocation the agent wants to perform."""
+
     tool_name: str = Field(description="Name of the tool to call")
     arguments: dict = Field(description="Arguments to pass to the tool")
+    # reasoning forces the LLM to explain its choice. This improves accuracy
+    # because the model must articulate why it's picking a tool before committing.
     reasoning: str = Field(description="Why this tool is being called")
 
 
 class AgentResponse(BaseModel):
-    """Agent's response at each iteration."""
+    """The agent's decision at each loop iteration."""
+
     tool_calls: list[ToolCall] = Field(description="List of tool calls to execute")
     final_answer: str | None = Field(description="Final answer if task is complete")
+    # done is the critical control signal. The agent decides when it has enough.
+    # This is what makes it agentic -- the LLM controls the loop, not us.
     done: bool = Field(description="Whether the task is complete")
 
 
+# Agent Class
 # =============================================================================
-# AGENT CLASS
+# AGENT CLASS -- the plan-act-observe loop
 # =============================================================================
-# The agent runs a loop:
-# 1. Send task + history to LLM
-# 2. LLM decides: call tools OR give final answer
-# 3. If tools: execute them, add results to history, repeat
-# 4. If done: return final answer
-# =============================================================================
+# The agent is just a class that wraps: system prompt + tool registry + loop.
+# The system prompt describes available tools and sets behavioral constraints.
+# The loop sends context to the LLM, executes its decisions, feeds back results.
 
 class SimpleAgent:
-    """A simple LLM agent with tool-calling capability."""
+    """LLM agent: receives a task, decides which tools to use, iterates until done."""
 
     def __init__(self, max_iterations: int = 5):
-        """
-        Initialize the agent.
-
-        Args:
-            max_iterations: Maximum tool-calling rounds before giving up
-        """
         self.max_iterations = max_iterations
 
-        # System prompt = agent's "brain" - defines role, tools, and rules
-        self.system_prompt = """You are a bioinformatics assistant. You have access to tools.
+        # The system prompt is the agent's instruction set. It lists tools
+        # and sets rules. The LLM reads this every iteration, so keeping it
+        # concise matters -- it eats into the context window.
+        self.system_prompt = """You are a bioinformatics assistant with access to tools.
 
 Available tools:
 - reverse_complement(sequence: str) - Get reverse complement of DNA
@@ -236,64 +180,67 @@ Rules:
 """
 
     def run(self, task: str) -> str:
-        """
-        Execute the agent loop to complete a task.
+        """Run the agent loop: plan -> act -> observe -> reflect -> repeat.
 
-        Args:
-            task: The user's question/request
-
-        Returns:
-            str: Final answer from the agent
+        Each iteration:
+        1. Send full conversation history to the LLM
+        2. LLM returns AgentResponse with tool calls or final answer
+        3. Execute tool calls, collect observations
+        4. Append tool calls + results to conversation history
+        5. Repeat until done=True or max_iterations exhausted
         """
-        # Initialize conversation with system prompt + user task
+        # Conversation history starts with system prompt + user task.
+        # Each iteration appends more messages, so the LLM sees the full trail.
         messages = [
             {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": task}
         ]
 
-        # Main agent loop
         for iteration in range(self.max_iterations):
             print(f"  [Iteration {iteration + 1}]")
 
-            # Get LLM's decision
+            # PLAN: ask the LLM what to do next.
+            # It sees the full conversation -- the original task, previous tool
+            # calls, and their results. It decides: call more tools or finish.
             response = client.chat.completions.create(
                 model=MODEL,
                 max_tokens=MAX_TOKENS,
+                extra_body=EXTRA_BODY,
                 response_model=AgentResponse,
                 messages=messages
             )
 
-            # Check if done
+            # If the agent says it's done, return the final answer.
             if response.done and response.final_answer:
                 print(f"  [Done in {iteration + 1} iterations]")
                 return response.final_answer
 
-            # Execute tool calls
+            # ACT: execute each tool call the agent requested.
             observations = []
             for tool_call in response.tool_calls:
                 print(f"    Tool: {tool_call.tool_name}({tool_call.arguments})")
                 print(f"    Reason: {tool_call.reasoning}")
 
                 if tool_call.tool_name not in TOOLS:
+                    # Agent hallucinated a tool name -- tell it so it can recover.
                     obs = {"error": f"Unknown tool: {tool_call.tool_name}"}
                 else:
+                    # Execute the real function. Result is deterministic Python.
                     result = TOOLS[tool_call.tool_name](**tool_call.arguments)
                     obs = result
 
                 observations.append(obs)
                 print(f"    Result: {obs}")
 
-            # Add to conversation history
+            # OBSERVE: append the agent's actions and their results to history.
+            # Next iteration, the LLM sees: "I called X, got result Y, now..."
             messages.append({"role": "assistant", "content": str(response.tool_calls)})
             messages.append({"role": "user", "content": f"Tool results: {observations}"})
 
+        # Safety bound -- if the agent loops too many times, bail out.
         return f"Task incomplete after {self.max_iterations} iterations."
 
-
-# =============================================================================
-# DEMO
-# =============================================================================
-
+# Demo
 if __name__ == "__main__":
     print("=" * 60)
     print("DEMO 03: Simple Agent with Tools")
@@ -302,49 +249,38 @@ if __name__ == "__main__":
 
     agent = SimpleAgent(max_iterations=5)
 
-    # Test 1: Basic analysis (requires 2 tools)
+    # Test 1: Multi-step task -- the agent must call two different tools.
+    # This is the key test: does the agent plan across iterations?
+    # Iteration 1: calls count_bases -> gets GC% result
+    # Iteration 2: calls reverse_complement -> gets RC result
+    # Iteration 3: combines both results into final answer
     print("--- Test 1: GC Content + Reverse Complement ---")
     task1 = "What is the GC content of ATGCATGCATGC, and what is its reverse complement?"
-    print(f"Task: {task1}")
-    print()
+    print(f"Task: {task1}\n")
     result1 = agent.run(task1)
-    print(f"\nFinal Answer: {result1}")
-    print()
+    print(f"\nFinal Answer: {result1}\n")
 
-    # Test 2: Concept explanation
+    # Test 2: Single tool -- simple lookup, should finish in 1-2 iterations.
     print("--- Test 2: Concept Explanation ---")
     task2 = "Explain what GC content means"
-    print(f"Task: {task2}")
-    print()
+    print(f"Task: {task2}\n")
     result2 = agent.run(task2)
-    print(f"\nFinal Answer: {result2}")
-    print()
+    print(f"\nFinal Answer: {result2}\n")
 
-    # Test 3: Motif finding (uses the new find_motif tool)
+    # Test 3: Tool with specific arguments -- tests the agent's ability to
+    # extract the right parameters from natural language.
     print("--- Test 3: Motif Finding ---")
     task3 = "Find all ATG start codons in the sequence ATGCATGCATGC"
-    print(f"Task: {task3}")
-    print()
+    print(f"Task: {task3}\n")
     result3 = agent.run(task3)
-    print(f"\nFinal Answer: {result3}")
-    print()
+    print(f"\nFinal Answer: {result3}\n")
 
-    # Summary
     print("=" * 60)
-    print("DEMO 03 COMPLETE")
-    print("=" * 60)
+    print("Demo Summary:")
+    print("  - Agent architecture: system prompt + tool loop")
+    print("  - 4 bioinformatics tools available")
+    print("  - Agent decides which tool to call")
+    print("  - Multi-step reasoning demonstrated (Test 1 used 2 tools)")
     print()
-    print("What you saw:")
-    print("  ✓ Agent architecture (system prompt + tool loop)")
-    print("  ✓ 4 bioinformatics tools (reverse_complement, count_bases,")
-    print("    explain_concept, find_motif)")
-    print("  ✓ Agent decision-making (which tool to call)")
-    print("  ✓ Multi-step reasoning (Test 1 used 2 tools)")
-    print()
-    print("Try it yourself:")
-    print("  → Add your own tool (see tutorial for step-by-step)")
-    print()
-    print("Next steps:")
-    print("  → demo_04: Real API tools (UniProt, PubMed, BLAST)")
-    print("  → demo_05: LLM-generated tools (no hardcoded logic)")
+    print("Next: demo_04 for real API tools (UniProt, PubMed, BLAST)")
     print("=" * 60)
