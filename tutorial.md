@@ -47,11 +47,12 @@ The demos are organized by chapter:
 - demo_01: Basic LLM API calls
 - demo_02: Structured outputs
 
-**Chapter 2: Agents (Core Patterns)**  
+**Chapter 2: Agents (Core Patterns)**
 - demo_03: Simple tool-calling agent
 - demo_04: Real bioinformatics APIs
 - demo_05: Understanding LLM limitations
 - demo_06: Hybrid autonomous agent
+- demo_07: Full autonomous research agent
 
 **Quick Navigation**
 
@@ -448,7 +449,7 @@ Iteration 3:
 
 **The Agent Loop:**
 1. Ask LLM what to do
-2. If done=True: return answer  
+2. If done=True: return answer
 3. Execute tool calls
 4. Add results to conversation
 5. Repeat
@@ -1123,45 +1124,10 @@ WARNING:️  **Verify everything with hardcoded tools for real science!**
 4. For real science: **demo_04 (hardcoded) or verify independently**
 5. Be honest about what LLMs can and cannot do
 
-### 🏆 Agent Olympics - See It In Action!
-
-Want to see the difference between demo_04, demo_05, and demo_06? Run the comparison script:
-
-```bash
-python scripts/agent_olympics.py
-```
-
-This runs the **same task** on all three architectures and compares:
-- **Accuracy** - Does it get the right answer?
-- **Speed** - How long does it take?
-- **Reliability** - Does it fail on long sequences?
-
-**Expected output:**
-
-```
-Test: Short (8bp) sequence
-Expected GC%: 50.0%
-
-demo_04 (Real API):     50.0%   0.8s
-demo_05 (LLM pattern):  50.0%   3.2s  WARNING:️  got lucky!
-demo_06 (Hybrid):       50.0%   1.5s
-
-Test: Long (200bp) sequence
-Expected GC%: 50.0%
-
-demo_04 (Real API):     50.0%  (OK)
-demo_05 (LLM pattern):  48.0%  (not applicable)  (LLM lost track!)
-demo_06 (Hybrid):       50.0%  (OK)
-```
-
-**Key insight:** LLMs can handle short, common patterns. They fail on longer sequences where they can't rely on training data.
-
-**Next:**
-- demo_06 -> Fully autonomous investigation
 
 ## Demo 06: Hybrid Autonomous Investigation
 
-**File:** `demo/demo_06_hybrid_autonomous.py`
+**File:** `demo/demo_06_hybrid_autonomous_standalone.py`
 
 ### The Grand Finale: True Agentic Bioinformatics
 
@@ -1204,7 +1170,7 @@ demo_06 -> HYBRID (autonomous planning + real tools) <- YOU ARE HERE
 ### Run the Demo
 
 ```bash
-python demo/demo_06_hybrid_autonomous.py
+python demo/demo_06_hybrid_autonomous_standalone.py
 ```
 
 ### The Hybrid Architecture
