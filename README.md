@@ -103,14 +103,14 @@ pip install instructor requests openai pydantic
 Please edit the demo scripts and ensure these lines are set correctly for each one:
 
 ```bash
-export LLM_API_KEY="your-api-key-here"
+export API_KEY = "your-api-key"
 
 # Are you using de.NBI Cloud VM to do this tutorial?
-# Run ONLY ONE of them:
+# Choose ONLY ONE of them:
 # YES:
-export LLM_API_BASE="https://denbi-llm-api-internal.bihealth.org/v1"
+export API_BASE="https://denbi-llm-api-internal.bihealth.org/v1"
 # NO:
-export LLM_API_BASE="https://denbi-llm-api.bihealth.org/v1"
+export API_BASE="https://denbi-llm-api.bihealth.org/v1"
 ```
 
 > **Security:** Never commit API keys to version control. Use `.env` files or secret managers in production.
