@@ -8,13 +8,15 @@
 
 A self-contained workshop in which participants can try out simple agentic workflow using LLMs.
 
+Please contact the trainers directly, or use the [Discussion](https://github.com/de-KCD/de.NBI-Cloud-llms-in-practice/discussions) section if you have any questions.
+
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 
 ---
 
 ## Overview
 **Time estimation:** 3H+
-**Last update:** 2026-04-24
+**Last update:** 2026-04-27
 
 **Questions:**
 - What can LLMs do for bioinformatics, and where do they fail?
@@ -98,8 +100,9 @@ pip install instructor requests openai pydantic
 
 ### 3. Configure API Access
 
+Please edit the demo scripts and ensure these lines are set correctly for each one:
+
 ```bash
-# Set environment variables
 export LLM_API_KEY="your-api-key-here"
 
 # Are you using de.NBI Cloud VM to do this tutorial?
@@ -108,11 +111,8 @@ export LLM_API_KEY="your-api-key-here"
 export LLM_API_BASE="https://denbi-llm-api-internal.bihealth.org/v1"
 # NO:
 export LLM_API_BASE="https://denbi-llm-api.bihealth.org/v1"
-
-export LLM_MODEL="qwen3.5-fp8"
 ```
 
-> **Tip:** Add these to your `~/.bashrc` or `~/.zshrc` to persist across sessions.
 > **Security:** Never commit API keys to version control. Use `.env` files or secret managers in production.
 
 ## Demo 01: Basic LLM Calls
@@ -1054,9 +1054,6 @@ if llm_result != hardcoded_result:
 - Unusual calculations - no training patterns
 - Multi-step arithmetic - compounding errors
 - Edge cases - rare patterns
-
-**Solution:** Use demo_04 (hardcoded) for ALL real calculations.
-Demo_036 is for **prototyping and education only**.
 
 **LLM doesn't understand tool description:**
 
